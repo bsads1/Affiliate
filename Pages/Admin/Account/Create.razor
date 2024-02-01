@@ -1,0 +1,117 @@
+@page "/admin/account/create"
+@using Affiliate.Application.Dtos
+@attribute [Authorize(Policy = CustomPolicies.MasterAdminAccess)]
+@inject DatabaseContext DbContext
+
+<style>
+    .select2-results{
+        background: #fff;
+    }
+</style>
+
+<Toolbar PageTitle="@PageTitle" ToolbarItems="@ToolbarItems"></Toolbar>
+
+<div class="card card-compact w-100 bg-base-100 shadow-xl">
+    <div class="card-body">
+        <div id="alert"></div>
+        <form id="UserForm" method="post" data-enhance name="UserForm" enctype="multipart/form-data">
+            <div class="space-y-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                    <input id="username" name="Name" placeholder="Username" class="input input-bordered w-full max-w-xs"/>
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input id="email" name="Email" placeholder="Email" class="input input-bordered w-full max-w-xs"/>
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input id="password" name="Password" placeholder="Password" class="input input-bordered w-full max-w-xs"/>
+                </div>
+                <div>
+                    <label for="repeatPassword" class="block text-sm font-medium text-gray-700">Repeat Password</label>
+                    <input id="repeatPassword" name="RepeatPassword" placeholder="Repeat Password" class="input input-bordered w-full max-w-xs"/>
+                </div>
+                <div>
+                    <label for="roleSelect" class="block text-sm font-medium text-gray-700">Roles</label>
+                    <select id="roleSelect" name="Roles" class="select select-bordered">
+                        @if (Roles.Any())
+                        {
+                            foreach (var role in Roles)
+                            {
+                                <option value="@role.Guid">@role.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div>
+                    <button class="btn btn-neutral btn-save" type="button" onclick="submitForm()">Create</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<SectionContent SectionName="section-bottom">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script> <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script > 
+        async function submitForm() {
+            const form = document.getElementById('UserForm');
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('/api/account/create', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json().then(data => data);
+                if (data.ok) {
+                    globalCommons.CreateAlert('Form submitted successfully', 'success',document.querySelector('#alert'));
+                    setTimeout(() => {
+                        window.location.href = '/admin/account/edit/' + data.id;
+                    },1000);
+                   
+                    document.querySelector('.btn-save').classList.add('hidden');
+                } else {
+                    globalCommons.CreateAlert(data.detail, 'error',document.querySelector('#alert'));
+                }
+            } catch (error) {
+                console.error('An error occurred during form submission:', error);
+            }
+        }
+        $(function () {
+            $('#roleSelect').select2({
+                selectionCssClass: 'input input-bordered w-full max-w-xs h-fit',
+                dropdownCssClass: 'input input-bordered w-full max-w-xs',
+                multiple: true,
+                placeholder: 'Select roles',
+                allowClear: true,
+                width: '100%',
+            }).val('').trigger('change');
+           
+            $('#UserForm').on('submit', async function (e) {
+                await submitForm();
+            })
+        })
+    </script>
+</SectionContent>
+
+@code {
+
+    private IEnumerable<Role> Roles { get; set; }
+    private string PageTitle { get; set; }
+
+    private List<ToolbarItem> ToolbarItems { get; set; } =
+    [
+        new ToolbarItem { Href = "/admin/account", Text = "Back to Accounts List", ClassList = "btn btn-neutral" }
+    ];
+
+    protected override void OnInitialized()
+    {
+        Roles = DbContext.Roles.OrderBy(p => p.Id).ToList();
+        PageTitle = "Create Account";
+    }
+
+}

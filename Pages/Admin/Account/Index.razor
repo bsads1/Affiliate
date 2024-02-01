@@ -1,0 +1,64 @@
+@page "/admin/account/{Page:int?}"
+@using Microsoft.EntityFrameworkCore
+@using Affiliate.Application.Extensions.Paging
+@attribute [Authorize(Policy = CustomPolicies.MasterAdminAccess)]
+@inject DatabaseContext DbContext
+
+@code {
+
+    [Parameter] public int Page { get; set; } = 1;
+
+    private const string Route = "/admin/account/{0}";
+    PaginatedList<User> _pages = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Page < 1) Page = 1;
+        var queryable = DbContext.Users.AsNoTracking()
+            .OrderByDescending(p => p.CreatedAt);
+        _pages = await queryable.ToPaginatedListAsync(Page, 10);
+    }
+
+}
+
+<div class="prose">
+    <h3>User manager</h3>
+</div>
+<table class="w-full bg-white shadow-md rounded my-6">
+    <thead>
+    <tr>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">#</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Name</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Email</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Updated</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-right">Points</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-right">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @if (_pages.Any())
+    {
+        var stt = Page * 10 - 9;
+        foreach (var user in _pages)
+        {
+            <tr>
+                <td class="py-2 px-4 border-b border-gray-200">@stt</td>
+                <td class="py-2 px-4 border-b border-gray-200">@user.Name</td>
+                <td class="py-2 px-4 border-b border-gray-200">@user.Email</td>
+                <td class="py-2 px-4 border-b border-gray-200">@user.UpdatedAt</td>
+                <td class="py-2 px-4 border-b border-gray-200 text-right">@user.Points</td>
+                <td class="py-2 px-4 border-b border-gray-200 text-right">
+                <div class="flex justify-end">
+                    <a class="btn btn-sm btn-primary mr-2" href="@($"/admin/account/edit/{user.Id.ToString()}")">Edit</a>
+                    <a class="btn btn-sm btn-danger" href="@($"/admin/account/delete/{user.Id.ToString()}")">Delete</a>
+                </div>
+                </td>
+            </tr>
+            stt++;
+        }
+    }
+    </tbody>
+</table>
+<div class="flex justify-center mt-3">
+    <Pagination Route="@Route" CurrentPage="@Page" TotalPage="@_pages.TotalPages"/>
+</div>

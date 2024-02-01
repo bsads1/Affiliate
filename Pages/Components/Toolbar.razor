@@ -1,0 +1,29 @@
+@using Affiliate.Application.Dtos
+@using Affiliate.Application.Enums
+@inject NavigationManager NavigationManager
+
+<div class="navbar bg-base-100 mb-5 shadow-xl rounded">
+    <div class="navbar-start">
+        <div class="prose">
+            <h3>@PageTitle</h3>
+        </div>
+    </div>
+    <div class="navbar-end gap-2">
+        @if (ToolbarItems.Count > 0)
+        {
+            foreach (var toolbarItem in ToolbarItems)
+            {
+                var text = (MarkupString) (toolbarItem?.Text ?? "");
+                <a href="@NavigationManager.ToAbsoluteUri(toolbarItem?.Href)" 
+                   class="@toolbarItem.ClassList">
+                    @text
+                </a>        
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string PageTitle { get; set; } = "";
+    [Parameter] public List<ToolbarItem?> ToolbarItems { get; set; } = [];
+}
