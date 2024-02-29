@@ -16,6 +16,9 @@
     private string AppName = "";
 
     [Inject]
+    public ConfigService ConfigService { get; set; } = default!;
+    
+    [Inject]
     public AuthService AuthService { get; set; } = default!;
 
     [Inject]
@@ -35,5 +38,7 @@
         }
 
         AppName = Config.GetValue<string>("Spark:App:Name")!;
+        
+        PageState.Config = await ConfigService.GetConfig();
     }
 }

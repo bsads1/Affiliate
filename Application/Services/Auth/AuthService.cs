@@ -50,6 +50,7 @@ public class AuthService
         var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
         identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString(CultureInfo.InvariantCulture)));
         identity.AddClaim(new Claim("Guid", user.Guid.ToString()));
+        identity.AddClaim(new Claim("Uid", user.Uid));
         identity.AddClaim(new Claim(ClaimTypes.Email, user.Email));
         identity.AddClaim(new Claim(ClaimTypes.Name, user.Name));
         identity.AddClaim(new Claim(ClaimTypes.UserData, user.Id.ToString(CultureInfo.InvariantCulture)));

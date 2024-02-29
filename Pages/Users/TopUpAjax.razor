@@ -1,0 +1,208 @@
+@page "/top-up-list"
+@using Affiliate.Application.Extensions.Paging
+@using Affiliate.Application.Extensions
+@layout EmptyLayout
+@inject NavigationManager NavigationManager
+@inject TransactionPointService TransactionPointService
+
+@code {
+    [CascadingParameter] public PageState PageState { get; set; } = default!;
+    private PaginatedList<TransactionPoint> _pages = [];
+    private int PageSize { get; set; } = 20;
+    private string Route;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = PageState.User.Id;
+        var userGuid = PageState.User.Guid;
+        if (userId > 0 && userGuid != Guid.Empty)
+        {
+            var uri = new Uri(NavigationManager.Uri);
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+            var page = int.TryParse(query["page"], out var p) ? p : 1;
+            var filter = query["filter"];
+            var sort = query["sort"];
+
+            Route = "/top-up-list?page={0}";
+            if (!string.IsNullOrEmpty(filter) || !string.IsNullOrEmpty(sort))
+            {
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    Route += $"&filter={filter}";
+                }
+
+                if (!string.IsNullOrEmpty(sort))
+                {
+                    Route += $"&sort={sort}";
+                }
+            }
+
+            if (!(page > 0)) page = 1;
+            _pages = await TransactionPointService.GetTransactionPoints(userGuid, page, PageSize, filter, sort);
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
+    private (string name, string color) GetTransactionType(string transactionPoint, long point)
+    {
+        string name;
+        string color;
+        switch (transactionPoint)
+        {
+            case "Purchase":
+                name = "Purchase";
+                color = "text-blue-500";
+                break;
+            case "Charge":
+                name = "Charge";
+                color = "text-blue-500";
+                break;
+            case "Redemption":
+                name = "Redemption";
+                color = "text-green-500";
+                break;
+            case "Refund":
+                name = "Refund";
+                color = "text-orange-500";
+                break;
+            case "Adjustment":
+                name = "Adjustment";
+                color = "text-yellow-500";
+                if (point < 0)
+                {
+                    color = "text-red-500";
+                }
+
+                break;
+            case "Expiration":
+                name = "Expiration";
+                color = "text-gray-800";
+                break;
+            case "Withdrawal":
+                name = "Withdrawal";
+                color = "text-red-500";
+                break;
+            default:
+                name = "Unknown";
+                color = "text-gray-500";
+                break;
+        }
+
+        return (name, color);
+    }
+
+}
+
+<div class="lg:flex">
+    <div class="scrollbar-custom overflow-x-auto">
+        <div class="w-full min-w-[736px] border border-jacarta-100 bg-white text-sm dark:border-jacarta-600 dark:bg-jacarta-700 dark:text-white lg:rounded-2lg" role="table">
+            <div class="flex rounded-t-2lg bg-jacarta-50 dark:bg-jacarta-600" role="row">
+                <div class="w-[28%] py-3 px-4" role="columnheader">
+                    <span class="w-full overflow-hidden text-ellipsis text-jacarta-700 dark:text-jacarta-100">
+                        Transaction ID
+                    </span>
+                </div>
+                <div class="w-[12%] py-3 px-4" role="columnheader">
+                    <span class="w-full overflow-hidden text-ellipsis text-jacarta-700 dark:text-jacarta-100">
+                        Type
+                    </span>
+                </div>
+                <div class="w-[12%] py-3 px-4 text-right" role="columnheader">
+                    <span class="w-full overflow-hidden text-ellipsis text-jacarta-700 dark:text-jacarta-100">
+                        Amount
+                    </span>
+                </div>
+                <div class="w-[12%] py-3 px-4 text-right" role="columnheader">
+                    <span class="w-full overflow-hidden text-ellipsis text-jacarta-700 dark:text-jacarta-100">
+                        Points
+                    </span>
+                </div>
+                <div class="w-[12%] py-3 px-4 text-right" role="columnheader">
+                    <span class="w-full overflow-hidden text-ellipsis text-jacarta-700 dark:text-jacarta-100">
+                        Balance
+                    </span>
+                </div>
+                <div class="w-[12%] flex-1 py-3 px-4" role="columnheader">
+                    <span class="w-full overflow-hidden text-ellipsis text-jacarta-700 dark:text-jacarta-100">
+                        Date
+                    </span>
+                </div>
+            </div>
+            @if (_pages.Any())
+            {
+                var stt = _pages.CalculateDescendingIndex();
+                foreach (var transactionPoint in _pages)
+                {
+                    var transactionType = GetTransactionType(transactionPoint.TransactionType, transactionPoint.PointsChanged);
+                    <div class="flex transition-shadow hover:shadow-lg" role="row">
+                        <div class="flex w-[28%] items-center border-t border-jacarta-100 py-4 px-4 dark:border-jacarta-600" role="cell">
+                            <span class="mr-2 lg:mr-4">@stt</span>
+                            <span class="font-display text-sm font-semibold text-jacarta-700 dark:text-white">
+                                @transactionPoint.Guid.ToString()
+                            </span>
+                        </div>
+                        <div class="flex w-[12%] items-center border-t border-jacarta-100 py-4 px-4 dark:border-jacarta-600" role="cell">
+                            <span class="@transactionType.color">@transactionType.name</span>
+                        </div>
+                        <div class="flex w-[12%] items-center whitespace-nowrap border-t border-jacarta-100 py-4 px-4 dark:border-jacarta-600 justify-end" role="cell">
+                            <span class="-ml-1" data-tippy-content="Amount">
+                                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 1920 1920" xml:space="preserve" class="mr-1 h-4 w-4">
+                                    <path fill="#8A92B2" d="M959.8 80.7L420.1 976.3 959.8 731z"></path>
+                                    <path fill="#62688F" d="M959.8 731L420.1 976.3l539.7 319.1zm539.8 245.3L959.8 80.7V731z"></path>
+                                    <path fill="#454A75" d="M959.8 1295.4l539.8-319.1L959.8 731z"></path>
+                                    <path fill="#8A92B2" d="M420.1 1078.7l539.7 760.6v-441.7z"></path>
+                                    <path fill="#62688F" d="M959.8 1397.6v441.7l540.1-760.6z"></path>
+                                </svg>
+                            </span>
+                            <span class="text-sm font-medium tracking-tight @transactionType.color">
+                                @transactionPoint.AmountChanged.AddDecimalSeparator()
+                            </span>
+                        </div>
+                        <div class="flex w-[12%] items-center border-t border-jacarta-100 py-4 px-4 dark:border-jacarta-600 justify-end" role="cell">
+                            <span class="-ml-1" data-tippy-content="Amount">
+                                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 1920 1920" xml:space="preserve" class="mr-1 h-4 w-4">
+                                    <path fill="#8A92B2" d="M959.8 80.7L420.1 976.3 959.8 731z"></path>
+                                    <path fill="#62688F" d="M959.8 731L420.1 976.3l539.7 319.1zm539.8 245.3L959.8 80.7V731z"></path>
+                                    <path fill="#454A75" d="M959.8 1295.4l539.8-319.1L959.8 731z"></path>
+                                    <path fill="#8A92B2" d="M420.1 1078.7l539.7 760.6v-441.7z"></path>
+                                    <path fill="#62688F" d="M959.8 1397.6v441.7l540.1-760.6z"></path>
+                                </svg>
+                            </span>
+                            <span class="text-sm font-medium tracking-tight @transactionType.color">
+                                @transactionPoint.PointsChanged.AddDecimalSeparator()
+                            </span>
+                        </div>
+                        <div class="flex w-[12%] items-center border-t border-jacarta-100 py-4 px-4 dark:border-jacarta-600 justify-end" role="cell">
+                            <strong>@transactionPoint.AccountBalance</strong>
+                        </div>
+                        <div class="flex flex-1 w-[12%] items-center border-t border-jacarta-100 py-4 px-4 dark:border-jacarta-600" role="cell">
+                            <span>@transactionPoint.TransactionTimestamp.ToString("dd-MM-yyyy HH:mm")</span>
+                            @if (!string.IsNullOrWhiteSpace(transactionPoint.TransactionDescription))
+                            {
+                                <a onclick="getData(@transactionPoint.Id)"
+                                   href="javascript:void(0)"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#infoModal"
+                                   class="inline-block font-semibold text-white ml-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/>
+                                    </svg>
+                                </a>
+                                <input type="hidden" id="des_@transactionPoint.Id" value="@transactionPoint.TransactionDescription">
+                            }
+                        </div>
+                    </div>
+                    stt--;
+                }
+
+                <div class="flex justify-center my-3">
+                    <Pagination Route="@Route" CurrentPage="@_pages.PageIndex" TotalPage="@_pages.TotalPages"/>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,204 @@
+@page "/user/top-up"
+@using Affiliate.Application.Enums
+@layout WebLayout
+<PageTitle>Top up list</PageTitle>
+<style>
+    .text-blue-500 {
+        color: #3b82f6;
+    }
+    .text-green-500 {
+        color: #22c55e;
+    }
+    .text-orange-500 {
+        color: #f59e0b;
+    }
+    .text-yellow-500 {
+        color: #eab308;
+    }
+    .text-red-500 {
+        color: #ef4444;
+    }
+    .text-gray-800 {
+        color: #1f2937;
+    }
+    .text-gray-500 {
+        color: #6b7280;
+    }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .page-item {
+      display: inline-block;
+      margin-right: 0.5rem;
+      background-color: #fff;
+    }
+    
+    .page-item.active .page-link {
+      background-color: #000;
+      color: #fff;
+    }
+    
+    .page-link {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border: none;
+      color: #000;
+      text-decoration: none;
+      line-height: 25px;
+    }
+    
+    .page-link.btn-active {
+      background-color: #000;
+      color: #fff;
+    }
+    
+    .page-item.disabled .page-link {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+</style>
+<section class="sm:py-12 px-4">
+    <div class="w-full container sm:max-w-md mx-auto py-20 flex flex-col justify-center items-center space-y-6">
+        <h1 class="py-16 text-center font-display text-4xl font-medium text-jacarta-700 dark:text-white">Top Up History</h1>
+        <div class="mb-8 flex flex-wrap items-center justify-between">
+            <div class="flex flex-wrap items-center">
+                <div class="my-1 mr-2.5">
+                    <button class="dropdown-toggle group group flex h-9 items-center rounded-lg border border-jacarta-100 bg-white px-4 font-display text-sm font-semibold text-jacarta-700 transition-colors hover:border-transparent hover:bg-accent hover:text-white dark:border-jacarta-600 dark:bg-jacarta-700 dark:text-white dark:hover:bg-accent" id="categoriesFilter" data-bs-toggle="dropdown" aria-expanded="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="mr-1 h-4 w-4 fill-jacarta-700 transition-colors group-hover:fill-white dark:fill-jacarta-100">
+                            <path fill="none" d="M0 0h24v24H0z"></path>
+                            <path d="M14 10v4h-4v-4h4zm2 0h5v4h-5v-4zm-2 11h-4v-5h4v5zm2 0v-5h5v4a1 1 0 0 1-1 1h-4zM14 3v5h-4V3h4zm2 0h4a1 1 0 0 1 1 1v4h-5V3zm-8 7v4H3v-4h5zm0 11H4a1 1 0 0 1-1-1v-4h5v5zM8 3v5H3V4a1 1 0 0 1 1-1h4z"></path>
+                        </svg>
+                        <span>All Categories</span>
+                    </button>
+                    <div class="dropdown-menu z-10 hidden min-w-[220px] whitespace-nowrap rounded-xl bg-white py-4 px-2 text-left shadow-xl dark:bg-jacarta-800" aria-labelledby="categoriesFilter">
+                        <ul class="flex flex-col flex-wrap">
+                            <li>
+                                <a href="javascript:;" class="dropdown-item flex w-full items-center justify-between rounded-xl px-5 py-2 text-left font-display text-sm transition-colors hover:bg-jacarta-50 dark:text-white dark:hover:bg-jacarta-600">
+                                    <span class="text-jacarta-700 dark:text-white">All</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="mb-[3px] h-4 w-4 fill-accent">
+                                        <path fill="none" d="M0 0h24v24H0z"></path>
+                                        <path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z"></path>
+                                    </svg>
+                                </a>
+                            </li>
+                            @foreach (var item in Enum.GetValues(typeof(TransactionType)))
+                            {
+                                <li>
+                                    <a onclick="filterData('@item')" href="javascript:;" class="dropdown-item flex w-full items-center rounded-xl px-5 py-2 text-left font-display text-sm transition-colors hover:bg-jacarta-50 dark:text-white dark:hover:bg-jacarta-600">
+                                        @item.ToString()
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dropdown relative my-1 cursor-pointer">
+                <div class="dropdown-toggle inline-flex w-48 items-center justify-between rounded-lg border border-jacarta-100 bg-white py-2 px-3 text-sm dark:border-jacarta-600 dark:bg-jacarta-700 dark:text-white" role="button" id="sortOrdering" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="font-display">Last 7 Days</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-4 w-4 fill-jacarta-500 dark:fill-white">
+                        <path fill="none" d="M0 0h24v24H0z"></path>
+                        <path d="M12 13.172l4.95-4.95 1.414 1.414L12 16 5.636 9.636 7.05 8.222z"></path>
+                    </svg>
+                </div>
+
+                <div class="dropdown-menu z-10 hidden w-full whitespace-nowrap rounded-xl bg-white py-4 px-2 text-left shadow-xl dark:bg-jacarta-800" aria-labelledby="sortOrdering">
+                    <button onclick="sortData('7days')" class="dropdown-item flex w-full items-center justify-between rounded-xl px-5 py-2 text-left font-display text-sm text-jacarta-700 transition-colors hover:bg-jacarta-50 dark:text-white dark:hover:bg-jacarta-600">
+                        Last 7 Days
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="mb-[3px] h-4 w-4 fill-accent">
+                            <path fill="none" d="M0 0h24v24H0z"></path>
+                            <path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z"></path>
+                        </svg>
+                    </button>
+                    <button onclick="sortData('30days')" class="dropdown-item flex w-full items-center justify-between rounded-xl px-5 py-2 text-left font-display text-sm transition-colors hover:bg-jacarta-50 dark:text-white dark:hover:bg-jacarta-600">
+                        Last 30 Days
+                    </button>
+                    <button onclick="sortData('60days')" class="dropdown-item flex w-full items-center justify-between rounded-xl px-5 py-2 text-left font-display text-sm transition-colors hover:bg-jacarta-50 dark:text-white dark:hover:bg-jacarta-600">
+                        Last 60 Days
+                    </button>
+                    <button onclick="sortData('90days')" class="dropdown-item flex w-full items-center justify-between rounded-xl px-5 py-2 text-left font-display text-sm transition-colors hover:bg-jacarta-50 dark:text-white dark:hover:bg-jacarta-600">
+                        Last 90 Days
+                    </button>
+                    <button onclick="sortData('365days')" class="dropdown-item flex w-full items-center justify-between rounded-xl px-5 py-2 text-left font-display text-sm transition-colors hover:bg-jacarta-50 dark:text-white dark:hover:bg-jacarta-600">
+                        Last Year
+                    </button>
+                    <button onclick="sortData('all')" class="dropdown-item flex w-full items-center justify-between rounded-xl px-5 py-2 text-left font-display text-sm transition-colors hover:bg-jacarta-50 dark:text-white dark:hover:bg-jacarta-600">
+                        All Time
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="top-up-list" class="my-2"></div>
+    </div>
+</section>
+<div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog max-w-2xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="infoModalLabel">Note</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        height="24"
+                        class="h-6 w-6 fill-jacarta-700 dark:fill-white">
+                        <path fill="none" d="M0 0h24v24H0z"/>
+                        <path
+                            d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body p-6 text-white">
+            </div>
+        </div>
+    </div>
+</div>
+<SectionContent SectionName="section-bottom">
+    <script>
+        var sort = "";
+        var filter = "";
+        document.addEventListener("DOMContentLoaded", function() {
+            globalCommons.InputMask("decimal", {
+                groupSeparator: '.',
+                digits: 0,
+                min:0,
+                inputtype: "text"
+            },"#amount");
+            fetch("/top-up-list?page=1").then(response => response.text()).then(data => {
+                document.getElementById("top-up-list").innerHTML = data;
+            })
+        })
+        function getData(id){
+            const des = document.getElementById("des_"+id).value;
+            document.querySelector("#infoModal .modal-body").innerHTML = des;
+        }
+        document.querySelector('#top-up-list').addEventListener('click', function(event) {
+          if (event.target.classList.contains('page-link')) {
+            event.preventDefault();
+            const href = event.target.getAttribute('href');
+            fetch(href).then(response => response.text()).then(data => {
+                document.getElementById("top-up-list").innerHTML = data;
+            })
+          } else{
+              event.preventDefault()
+          }
+        });
+        function filterData(type){
+            filter = type
+            fetch("/top-up-list?filter="+type+"&sort="+sort).then(response => response.text()).then(data => {
+                document.getElementById("top-up-list").innerHTML = data;
+            });
+        }
+        function sortData(type){
+            sort = type
+            fetch("/top-up-list?sort="+type+"&filter="+filter).then(response => response.text()).then(data => {
+                document.getElementById("top-up-list").innerHTML = data;
+            })
+        }
+    </script>
+</SectionContent>

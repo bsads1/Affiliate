@@ -1,6 +1,5 @@
 @page "/admin/account/edit/{Id:int}"
 @using Affiliate.Application.Dtos
-@using Affiliate.Application.Enums
 @inject DatabaseContext DbContext
 @inject NavigationManager NavigationManager
 @attribute [Authorize(Policy = CustomPolicies.MasterAdminAccess)]
@@ -13,13 +12,12 @@
     }
 </style>
 
-     <Toolbar PageTitle="@PageTitle" ToolbarItems="@ToolbarItems"></Toolbar>
- 
+<Toolbar PageTitle="@PageTitle" ToolbarItems="@ToolbarItems"></Toolbar>
+
 <div class="card card-compact w-100 bg-base-100 shadow-xl">
     <div class="card-body">
         <div id="alert"></div>
-        <form id="UserForm" method="post" 
-              data-enhance name="UserForm" enctype="multipart/form-data">
+        <form id="UserForm" data-enhance name="UserForm" enctype="multipart/form-data">
             <input type="hidden" name="Id" value="@Form.Id"/>
             <div class="space-y-4">
                 <div>
@@ -43,14 +41,16 @@
                     <button class="btn btn-neutral" type="button" onclick="submitForm()">Update</button>
                 </div>
             </div>
+            <AntiforgeryToken/>
         </form>
     </div>
 </div>
 
 <SectionContent SectionName="section-bottom">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script> <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
+    <link href="/js/select2/select2.min.css" rel="stylesheet"/>
+    <script src="/js/jquery-3.7.1.min.js"></script> 
+    <script src="/js/select2/select2.min.js"></script>
+    
     <script > 
         async function submitForm() {
             const form = document.getElementById('UserForm');
@@ -71,11 +71,13 @@
                 console.error('An error occurred during form submission:', error);
             }
         }
+        
         function getRoles(){
             const roles = $('#RolesString').val();
-            return roles.split(",");
+            return roles.split(',');
         }
-        $(function () {
+        
+        document.addEventListener("DOMContentLoaded", function() {
             $('#roleSelect').select2({
                 selectionCssClass: 'input input-bordered w-full max-w-xs h-fit',
                 dropdownCssClass: 'input input-bordered w-full max-w-xs',
@@ -100,34 +102,28 @@
 
     private List<ToolbarItem> ToolbarItems { get; set; } =
     [
-        new ToolbarItem { Href = "/admin/account/create", Text = "Add Account", ClassList = "btn btn-primary" },
-        new ToolbarItem { Href = "/admin/account", Text = "Back to Accounts List", ClassList = "btn btn-neutral" }
+        new ToolbarItem { Href = "/admin/account/create", Text = "Add Account", ClassList = "btn btn-primary text-base-100" },
+        new ToolbarItem { Href = "/admin/account", Text = "Back to Accounts List", ClassList = "btn btn-neutral text-base-100" }
     ];
 
     protected override void OnInitialized()
     {
         Form ??= new();
-        Roles = DbContext.Roles.OrderBy(p => p.Id).ToList();
-    }
-
-    protected override void OnParametersSet()
-    {
         var user = DbContext.Users.Find(Id);
-        if (user == null)
+        if (user == null || user.IsDelete)
         {
             NavigationManager.NavigateTo("/admin/account");
         }
         else
         {
             var userRoles = (from ur in DbContext.UserRoles
-                join r in DbContext.Roles on ur.RoleId equals r.Guid
                 where ur.UserId == user.Guid
-                select r).ToList();
+                select ur.RoleId).OrderBy(p => p).ToList();
             Form.Id ??= user.Id;
             Form.Name ??= user.Name;
             Form.Email ??= user.Email;
             Form.Points ??= user.Points;
-            Form.Roles ??= userRoles.Select(p => p.Guid).ToList();
+            Form.Roles ??= userRoles;
         }
 
         PageTitle = $"Edit Account {Form.Name}";
@@ -154,58 +150,3 @@
     }
 
 }
-
-@*
-@code {
-    [Parameter] public int Id { get; set; } = 1;
-    private string Name { get; set; }
-
-    [SupplyParameterFromForm] 
-    public User1? EditUser { get; set; } = new();
-
-    protected override void OnParametersSet()
-    {
-        var user = DbContext.Users.Find(Id);
-        if (user == null)
-        {
-            NavigationManager.NavigateTo("/admin/account");
-        }
-        else
-        {
-            EditUser.Id = user.Id;
-            EditUser.Name = user.Name;
-            EditUser.Email = user.Email;
-        }
-    }
-
-    private void HandleValidSubmit()
-    {
-        //get form
-        string newMail = EditUser.Email;
-        Name = "Success " + newMail;
-    }
-
-    public class User1
-    {
-        public string Email { get; set; }
-        public string Name { get; set; }
-        public int Id { get; set; }
-    }
-}
-
-<h3>Edit @EditUser.Email</h3>
-@if (!string.IsNullOrEmpty(Name))
-{
-    <h1>@Name</h1>
-    <h2>@EditUser.Email</h2>
-}
-
-<EditForm Enhance Model="EditUser" FormName="EditUserForm" OnSubmit="HandleValidSubmit">
-    <div>
-        <InputText type="email" @bind-Value="EditUser.Email" placeholder="Email" 
-                   class="input input-bordered w-full max-w-xs"/>
-    </div>
-    <div>
-     </div>
-    <button type="submit" class="btn btn-primary">Submit</button> 
-</EditForm>*@

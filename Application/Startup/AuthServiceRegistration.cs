@@ -15,13 +15,16 @@ public static class AuthServiceRegistration
             {
                 options.AddPolicy(role, policy => policy.RequireRole(role));
             }
-            
+
             options.AddPolicy(CustomPolicies.AdminAccess, policy =>
                 policy.RequireRole(CustomRoles.Master, CustomRoles.Admin, CustomRoles.Editor));
-
-            options.AddPolicy(CustomPolicies.MasterAdminAccess, policy =>
-                policy.RequireRole(CustomRoles.Master, CustomRoles.Admin));
             
+            // options.AddPolicy(CustomPolicies.MasterAdminAccess, policy =>
+            //     policy.RequireRole(CustomRoles.Master, CustomRoles.Admin));
+            //TODO: remove in production
+            options.AddPolicy(CustomPolicies.MasterAdminAccess, policy =>
+                policy.RequireAuthenticatedUser());
+ 
             options.AddPolicy(CustomPolicies.UserAccess, policy =>
                 policy.RequireAuthenticatedUser());
         });

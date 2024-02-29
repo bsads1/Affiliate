@@ -22,6 +22,378 @@ namespace Affiliate.Application.Database.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Affiliate.Application.Models.Bet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("BetDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("bet_date");
+
+                    b.Property<int>("BetOnPlayer")
+                        .HasColumnType("integer")
+                        .HasColumnName("bet_on_player");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guid");
+
+                    b.Property<Guid>("LivestreamGuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("livestream_guid");
+
+                    b.Property<long>("PointsBet")
+                        .HasColumnType("bigint")
+                        .HasColumnName("points_bet");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserGuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_guid");
+
+                    b.HasKey("Id")
+                        .HasName("pk_bets");
+
+                    b.ToTable("bets", (string)null);
+                });
+
+            modelBuilder.Entity("Affiliate.Application.Models.ConfigPage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdditionalMeta")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("additional_meta");
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("author");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("CustomCss")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("custom_css");
+
+                    b.Property<string>("CustomJs")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("custom_js");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Favicon")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("favicon");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guid");
+
+                    b.Property<string>("Keywords")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("keywords");
+
+                    b.Property<string>("Logo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("logo");
+
+                    b.Property<string>("PageName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("page_name");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_config_pages");
+
+                    b.ToTable("config_pages", (string)null);
+                });
+
+            modelBuilder.Entity("Affiliate.Application.Models.Livestream", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AvailableTimeEnd")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("available_time_end");
+
+                    b.Property<DateTime?>("AvailableTimeStart")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("available_time_start");
+
+                    b.Property<DateTime?>("CloseTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("close_time");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("content");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guid");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("image");
+
+                    b.Property<bool>("IsDelete")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_delete");
+
+                    b.Property<bool>("IsEnd")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_end");
+
+                    b.Property<bool>("IsShow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_show");
+
+                    b.Property<string>("LivestreamInput")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("livestream_input");
+
+                    b.Property<string>("Player1Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("player1name");
+
+                    b.Property<string>("Player2Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("player2name");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("slug");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_time");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<int>("Winner")
+                        .HasColumnType("integer")
+                        .HasColumnName("winner");
+
+                    b.HasKey("Id")
+                        .HasName("pk_livestreams");
+
+                    b.ToTable("livestreams", (string)null);
+                });
+
+            modelBuilder.Entity("Affiliate.Application.Models.MenuItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guid");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer")
+                        .HasColumnName("level");
+
+                    b.Property<string>("Link")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("link");
+
+                    b.Property<int>("ParentId")
+                        .HasColumnType("integer")
+                        .HasColumnName("parent_id");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_menu_items");
+
+                    b.ToTable("menu_items", (string)null);
+                });
+
+            modelBuilder.Entity("Affiliate.Application.Models.PageItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Banner")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("banner");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("content");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guid");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("image");
+
+                    b.Property<bool>("IsDelete")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_delete");
+
+                    b.Property<bool>("IsShow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_show");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("slug");
+
+                    b.Property<string>("Tags")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("tags");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_page_items");
+
+                    b.ToTable("page_items", (string)null);
+                });
+
             modelBuilder.Entity("Affiliate.Application.Models.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -79,7 +451,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 1,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("80e059b4-59d3-4dd0-a475-990669505887"),
+                            Guid = new Guid("8233cc17-fa3b-4eda-b1aa-1ad0b2b1ca88"),
                             Name = "Master"
                         },
                         new
@@ -87,7 +459,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 2,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("b7b31d29-3250-4ab5-89a0-4dd6cd1682d1"),
+                            Guid = new Guid("df1296d2-8014-4b7d-90aa-4072d0d3d1a9"),
                             Name = "Admin"
                         },
                         new
@@ -95,7 +467,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 3,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("ce82a1d2-54dc-4532-a801-2c9c6b04cedf"),
+                            Guid = new Guid("c2325ee1-783d-408f-9ce1-08b2e176d491"),
                             Name = "Editor"
                         },
                         new
@@ -103,7 +475,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 4,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("674e3a3e-93a5-400c-8157-c3e2ed7c791a"),
+                            Guid = new Guid("78b467a1-7f91-41eb-a127-857ffb23734b"),
                             Name = "User"
                         });
                 });
@@ -117,6 +489,14 @@ namespace Affiliate.Application.Database.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<long>("AccountBalance")
+                        .HasColumnType("bigint")
+                        .HasColumnName("account_balance");
+
+                    b.Property<long>("AmountChanged")
+                        .HasColumnType("bigint")
+                        .HasColumnName("amount_changed");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -125,22 +505,22 @@ namespace Affiliate.Application.Database.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
                     b.Property<Guid>("Guid")
                         .HasColumnType("uuid")
                         .HasColumnName("guid");
 
-                    b.Property<long>("Points")
+                    b.Property<long>("PointsChanged")
                         .HasColumnType("bigint")
-                        .HasColumnName("points");
+                        .HasColumnName("points_changed");
 
-                    b.Property<DateTime>("TransactionDate")
+                    b.Property<string>("TransactionDescription")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("transaction_description");
+
+                    b.Property<DateTime>("TransactionTimestamp")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("transaction_date");
+                        .HasColumnName("transaction_timestamp");
 
                     b.Property<string>("TransactionType")
                         .IsRequired()
@@ -197,6 +577,10 @@ namespace Affiliate.Application.Database.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("guid");
 
+                    b.Property<bool>("IsDelete")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_delete");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text")
@@ -214,6 +598,12 @@ namespace Affiliate.Application.Database.Migrations
                     b.Property<string>("RememberToken")
                         .HasColumnType("text")
                         .HasColumnName("remember_token");
+
+                    b.Property<string>("Uid")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("uid");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")

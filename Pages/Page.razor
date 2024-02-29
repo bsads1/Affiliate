@@ -1,0 +1,39 @@
+@page "/{Slug}"
+@using Microsoft.EntityFrameworkCore
+@inject DatabaseContext DbContext
+@inject NavigationManager NavigationManager
+@layout WebLayout
+
+<PageTitle>@PageTitle</PageTitle>
+
+<section class="relative lg:pb-96">
+    @if (!string.IsNullOrEmpty(PageItem?.Banner))
+    {
+        <div class="relative mb-5">
+            <img src="@PageItem.Banner" alt="@PageItem.Name" class="h-[18.75rem] object-cover w-full">
+        </div>
+    }
+    <div class="container">
+        @Content
+    </div>
+</section>
+
+@code {
+    [Parameter] public string? Slug { get; set; } = "";
+    private string? PageTitle { get; set; }
+    private MarkupString Content { get; set; }
+    private PageItem? PageItem { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(Slug)) NavigationManager.NavigateTo("/");
+        var pageItem = await DbContext.PageItems
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Slug.ToLower() == Slug.ToLower() && p.IsDelete == false);
+        if (pageItem == null) NavigationManager.NavigateTo("/");
+        PageItem = pageItem;
+        PageTitle = pageItem?.Name ?? "";
+        Content = new MarkupString(pageItem?.Content ?? "");
+    }
+
+}

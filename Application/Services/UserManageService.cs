@@ -1,27 +1,23 @@
 using Affiliate.Application.Database;
 using Affiliate.Application.Dtos;
+using Affiliate.Application.Extensions;
 using Affiliate.Application.Models;
 using Affiliate.Application.Services.Auth;
-using Affiliate.Pages.Profile;
-using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Primitives;
+using Serilog;
 
 namespace Affiliate.Application.Services;
 
 public class UserManageService(DatabaseContext db, UsersService usersService)
 {
- 
-    
     public async Task<User?> CreateUserAsync(UserPostFormDto userPostFormDto)
     {
         try
         {
-            
             var newUser = new User
             {
                 Guid = Guid.NewGuid(),
-                Name = userPostFormDto.Name,
+                Name = userPostFormDto.Name ?? string.Empty,
                 Points = 0,
                 Email = userPostFormDto.Email,
                 Password = usersService.GetSha256Hash(userPostFormDto.Password),
@@ -31,8 +27,7 @@ public class UserManageService(DatabaseContext db, UsersService usersService)
 
             db.Users.Add(newUser);
             if (userPostFormDto.Roles != null && userPostFormDto.Roles.Any())
-            { 
-
+            {
                 foreach (var role in userPostFormDto.Roles)
                 {
                     db.UserRoles.Add(new UserRole
@@ -42,13 +37,15 @@ public class UserManageService(DatabaseContext db, UsersService usersService)
                     });
                 }
             }
-            
+
             await db.SaveChangesAsync();
 
             return newUser;
         }
         catch (Exception e)
         {
+            var exception = e.InnerException?.Message ?? e.Message;
+            Log.Error("Error updating config page: {Exception}", exception);
             return null;
         }
     }
@@ -61,9 +58,12 @@ public class UserManageService(DatabaseContext db, UsersService usersService)
             if (userToUpdate != null)
             {
                 userToUpdate.Email = userPostForm.Email;
-                userToUpdate.Points = userPostForm.Points ?? 0;
                 userToUpdate.UpdatedAt = DateTime.UtcNow;
                 userToUpdate.UpdatedBy = userPostForm.UpdatedBy;
+                if (string.IsNullOrEmpty(userToUpdate.Uid))
+                {
+                    userToUpdate.Uid = GuidExtension.TaoUid();
+                }
                 if (userPostForm.Roles != null && userPostForm.Roles.Any())
                 {
                     var userRoles = await db.UserRoles.Where(x => x.UserId == userToUpdate.Guid).ToListAsync();
@@ -92,6 +92,32 @@ public class UserManageService(DatabaseContext db, UsersService usersService)
         }
         catch (Exception e)
         {
+            var exception = e.InnerException?.Message ?? e.Message;
+            Log.Error("Error updating config page: {Exception}", exception);
+            return null;
+        }
+    }
+
+    public async Task<User?> DeleteUserAsync(int id, Guid updateBy)
+    {
+        try
+        {
+            var user = await db.Users.FindAsync(id);
+            if (user != null)
+            {
+                user.IsDelete = true;
+                user.UpdatedAt = DateTime.UtcNow;
+                user.UpdatedBy = updateBy;
+                await db.SaveChangesAsync();
+                return user;
+            }
+
+            return null;
+        }
+        catch (Exception e)
+        {
+            var exception = e.InnerException?.Message ?? e.Message;
+            Log.Error("Error updating config page: {Exception}", exception);
             return null;
         }
     }
@@ -99,6 +125,11 @@ public class UserManageService(DatabaseContext db, UsersService usersService)
     public async Task<bool> CheckEmailExists(string email)
     {
         return await db.Users.AnyAsync(x => x.Email == email);
+    }
+
+    public async Task<bool> CheckEmailExists(string email, int userId)
+    {
+        return await db.Users.AnyAsync(x => x.Email == email && x.Id != userId);
     }
 
     public async Task<bool> CheckUsernameExists(string username)

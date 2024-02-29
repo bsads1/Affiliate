@@ -1,0 +1,244 @@
+@code{
+    [CascadingParameter] public PageState PageState { get; set; } = default!;
+    [CascadingParameter] public HttpContext HttpContext { get; set; } = default!;
+    [Inject] MenuService MenuService { get; set; } = default!;
+    [Inject] RolesService RolesService { get; set; } = default!;
+    private bool IsShowAdmin { get; set; }
+
+    private List<MenuItem> Menus { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Menus = await MenuService.GetMenuItemsAsync();
+        IsShowAdmin = (await AuthorizationService.AuthorizeAsync(HttpContext.User, CustomPolicies.AdminAccess)).Succeeded;
+    }
+
+}
+
+<header class="js-page-header fixed top-0 z-20 w-full backdrop-blur transition-colors">
+    <div class="flex items-center px-6 py-6 xl:px-24">
+        <a href="/" class="shrink-0">
+            <img src="@PageState.Config?.Logo" class="max-h-7 dark:hidden" alt="@PageState.Config?.PageName"/>
+            <img src="@PageState.Config?.Logo" class="hidden max-h-7 dark:block" alt="@PageState.Config?.PageName"/>
+        </a>
+
+        <form action="/search" class="relative ml-12 mr-8 hidden basis-3/12 lg:block xl:ml-[8%]">
+            <input
+                type="search"
+                class="w-full rounded-2xl border border-jacarta-100 py-[0.6875rem] px-4 pl-10 text-jacarta-700 placeholder-jacarta-500 focus:ring-accent dark:border-transparent dark:bg-white/[.15] dark:text-white dark:placeholder-white"
+                placeholder="Search"/>
+            <span class="absolute left-0 top-0 flex h-full w-12 items-center justify-center rounded-2xl">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    height="24"
+                    class="h-4 w-4 fill-jacarta-500 dark:fill-white">
+                    <path fill="none" d="M0 0h24v24H0z"/>
+                    <path
+                        d="M18.031 16.617l4.283 4.282-1.415 1.415-4.282-4.283A8.96 8.96 0 0 1 11 20c-4.968 0-9-4.032-9-9s4.032-9 9-9 9 4.032 9 9a8.96 8.96 0 0 1-1.969 5.617zm-2.006-.742A6.977 6.977 0 0 0 18 11c0-3.868-3.133-7-7-7-3.868 0-7 3.132-7 7 0 3.867 3.132 7 7 7a6.977 6.977 0 0 0 4.875-1.975l.15-.15z"/>
+                </svg>
+            </span>
+        </form>
+
+        <div class="js-mobile-menu invisible lg:visible fixed inset-0 z-10 ml-auto items-center bg-white opacity-0 dark:bg-jacarta-800 lg:relative lg:inset-auto lg:flex lg:bg-transparent lg:opacity-100 dark:lg:bg-transparent">
+            <!-- Mobile Logo / Menu Close -->
+            <div class="t-0 fixed left-0 z-10 flex w-full items-center justify-between bg-white p-6 dark:bg-jacarta-800 lg:hidden">
+                <!-- Mobile Logo -->
+                <a href="/" class="shrink-0">
+                    <img src="@PageState.Config?.Logo" class="max-h-7 dark:hidden" alt="@PageState.Config?.PageName">
+                    <img src="@PageState.Config?.Logo" class="hidden max-h-7 dark:block" alt="@PageState.Config?.PageName">
+                </a>
+
+                <!-- Mobile Menu Close -->
+                <button class="js-mobile-close group ml-2 flex h-10 w-10 items-center justify-center rounded-full border border-jacarta-100 bg-white transition-colors hover:border-transparent hover:bg-accent focus:border-transparent focus:bg-accent dark:border-transparent dark:bg-white/[.15] dark:hover:bg-accent" aria-label="close mobile menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-4 w-4 fill-jacarta-700 transition-colors group-hover:fill-white group-focus:fill-white dark:fill-white">
+                        <path fill="none" d="M0 0h24v24H0z"></path>
+                        <path d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile Search -->
+            <form action="/search" class="relative mt-24 mb-8 w-full lg:hidden">
+                <input type="search" class="w-full rounded-2xl border border-jacarta-100 py-3 px-4 pl-10 text-jacarta-700 placeholder-jacarta-500 focus:ring-accent dark:border-transparent dark:bg-white/[.15] dark:text-white dark:placeholder-white" placeholder="Search">
+                <span class="absolute left-0 top-0 flex h-full w-12 items-center justify-center rounded-2xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-4 w-4 fill-jacarta-500 dark:fill-white">
+                        <path fill="none" d="M0 0h24v24H0z"></path>
+                        <path d="M18.031 16.617l4.283 4.282-1.415 1.415-4.282-4.283A8.96 8.96 0 0 1 11 20c-4.968 0-9-4.032-9-9s4.032-9 9-9 9 4.032 9 9a8.96 8.96 0 0 1-1.969 5.617zm-2.006-.742A6.977 6.977 0 0 0 18 11c0-3.868-3.133-7-7-7-3.868 0-7 3.132-7 7 0 3.867 3.132 7 7 7a6.977 6.977 0 0 0 4.875-1.975l.15-.15z"></path>
+                    </svg>
+                </span>
+            </form>
+
+            <!-- Primary Nav -->
+            <nav class="navbar w-full">
+                <ul class="flex flex-col lg:flex-row">
+                    @if (Menus.Any())
+                    {
+                        var level = 1;
+                        var menusInLevel = Menus.Where(x => x.Level == level);
+                        if (menusInLevel.Any())
+                        {
+                            foreach (var menuItem in menusInLevel)
+                            {
+                                var nextLevel = level + 1;
+                                var childItems = Menus.Where(p => p.ParentId == menuItem.Id && p.Level == nextLevel).ToList();
+                                if (childItems.Any())
+                                {
+                                    <WebMenuItem Level="@nextLevel" CurrentMenu="@menuItem" Menus="@childItems"></WebMenuItem>
+                                }
+                                else
+                                {
+                                    <li class="group">
+                                        <a href="@menuItem.Link" class="flex items-center justify-between py-3.5 font-display text-base text-jacarta-700 hover:text-accent focus:text-accent dark:text-white dark:hover:text-accent dark:focus:text-accent lg:px-5">@menuItem.Title</a>
+                                    </li>
+                                }
+                            }
+                        }
+                    }
+                </ul>
+            </nav>
+
+            <!-- Actions -->
+            <div class="ml-8 hidden lg:flex xl:ml-12">
+
+                <!-- Profile -->
+                <div class="js-nav-dropdown group-dropdown relative">
+                    @if (PageState.User.IsAuthenticated)
+                    {
+                        var uid = PageState.User.Uid;
+                        <button class="dropdown-toggle group ml-2 flex h-10 w-10 items-center justify-center rounded-full border border-jacarta-100 bg-white transition-colors hover:border-transparent hover:bg-accent focus:border-transparent focus:bg-accent dark:border-transparent dark:bg-white/[.15] dark:hover:bg-accent"
+                                id="profileDropdown" aria-expanded="false" data-bs-toggle="dropdown" aria-label="profile">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-4 w-4 fill-jacarta-700 transition-colors group-hover:fill-white group-focus:fill-white dark:fill-white">
+                                <path fill="none" d="M0 0h24v24H0z"></path>
+                                <path d="M11 14.062V20h2v-5.938c3.946.492 7 3.858 7 7.938H4a8.001 8.001 0 0 1 7-7.938zM12 13c-3.315 0-6-2.685-6-6s2.685-6 6-6 6 2.685 6 6-2.685 6-6 6z"></path>
+                            </svg>
+                        </button>
+                        <div class="dropdown-menu group-dropdown-hover:visible lg:invisible !-right-4 !top-[85%] !left-auto z-10 hidden min-w-[14rem] whitespace-nowrap rounded-xl bg-white transition-all will-change-transform before:absolute before:-top-3 before:h-3 before:w-full group-dropdown-hover:opacity-100 dark:bg-jacarta-800 lg:absolute lg:grid lg:!translate-y-4 lg:py-4 lg:px-2 lg:opacity-0 lg:shadow-2xl" aria-labelledby="profileDropdown">
+                            <button class="flex select-none items-center whitespace-nowrap px-5 font-display leading-none text-jacarta-700 dark:text-white" data-tippy-content="Copy">
+                                <span class="max-w-[10rem] overflow-hidden text-ellipsis">@PageState.User.Name</span>
+                            </button>
+
+                            <button class="js-copy-clipboard my-4 flex select-none items-center whitespace-nowrap px-5 font-display leading-none text-jacarta-700 dark:text-white" data-tippy-content="Copy">
+                                <span class="max-w-[10rem] overflow-hidden text-ellipsis">@uid</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="ml-1 mb-px h-4 w-4 fill-jacarta-500 dark:fill-jacarta-300">
+                                    <path fill="none" d="M0 0h24v24H0z"></path>
+                                    <path d="M7 7V3a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-4v3.993c0 .556-.449 1.007-1.007 1.007H3.007A1.006 1.006 0 0 1 2 20.993l.003-12.986C2.003 7.451 2.452 7 3.01 7H7zm2 0h6.993C16.549 7 17 7.449 17 8.007V15h3V4H9v3zM4.003 9L4 20h11V9H4.003z"></path>
+                                </svg>
+                            </button>
+
+                            <div class="mx-5 mb-6 rounded-lg border border-jacarta-100 p-4 dark:border-jacarta-600">
+                                <span class="text-sm font-medium tracking-tight dark:text-jacarta-200">Points</span>
+                                <div class="flex items-center">
+                                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 1920 1920" xml:space="preserve" class="-ml-1 mr-1 h-[1.125rem] w-[1.125rem]">
+                                        <path fill="#8A92B2" d="M959.8 80.7L420.1 976.3 959.8 731z"></path>
+                                        <path fill="#62688F" d="M959.8 731L420.1 976.3l539.7 319.1zm539.8 245.3L959.8 80.7V731z"></path>
+                                        <path fill="#454A75" d="M959.8 1295.4l539.8-319.1L959.8 731z"></path>
+                                        <path fill="#8A92B2" d="M420.1 1078.7l539.7 760.6v-441.7z"></path>
+                                        <path fill="#62688F" d="M959.8 1397.6v441.7l540.1-760.6z"></path>
+                                    </svg>
+                                    <span class="text-lg font-bold text-green">@PageState.User.Points</span>
+                                </div>
+                            </div>
+                            @if (IsShowAdmin)
+                            {
+                                <a href="/admin" class="flex items-center space-x-2 rounded-xl px-5 py-2 transition-colors hover:bg-jacarta-50 hover:text-accent focus:text-accent dark:hover:bg-jacarta-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#ffffff" class="bi bi-person-fill-gear" viewBox="0 0 16 16">
+                                        <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0m-9 8c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4m9.886-3.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382zM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0"/>
+                                    </svg>
+                                    <span class="mt-1 font-display text-sm text-jacarta-700 dark:text-white">Admin</span>
+                                </a>
+                            }
+                            <a href="/user/top-up" class="flex items-center space-x-2 rounded-xl px-5 py-2 transition-colors hover:bg-jacarta-50 hover:text-accent focus:text-accent dark:hover:bg-jacarta-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ffffff" width="16" height="16">
+                                    <path d="M4.5 3.75a3 3 0 0 0-3 3v.75h21v-.75a3 3 0 0 0-3-3h-15Z"/>
+                                    <path fill-rule="evenodd" d="M22.5 9.75h-21v7.5a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3v-7.5Zm-18 3.75a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5h-6a.75.75 0 0 1-.75-.75Zm.75 2.25a.75.75 0 0 0 0 1.5h3a.75.75 0 0 0 0-1.5h-3Z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="mt-1 font-display text-sm text-jacarta-700 dark:text-white">Request Points</span>
+                            </a>
+                            <a href="user.html" class="flex items-center space-x-2 rounded-xl px-5 py-2 transition-colors hover:bg-jacarta-50 hover:text-accent focus:text-accent dark:hover:bg-jacarta-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-4 w-4 fill-jacarta-700 transition-colors dark:fill-white">
+                                    <path fill="none" d="M0 0h24v24H0z"></path>
+                                    <path d="M11 14.062V20h2v-5.938c3.946.492 7 3.858 7 7.938H4a8.001 8.001 0 0 1 7-7.938zM12 13c-3.315 0-6-2.685-6-6s2.685-6 6-6 6 2.685 6 6-2.685 6-6 6z"></path>
+                                </svg>
+                                <span class="mt-1 font-display text-sm text-jacarta-700 dark:text-white">My Profile</span>
+                            </a>
+                            <a href="edit-profile.html" class="flex items-center space-x-2 rounded-xl px-5 py-2 transition-colors hover:bg-jacarta-50 hover:text-accent focus:text-accent dark:hover:bg-jacarta-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-4 w-4 fill-jacarta-700 transition-colors dark:fill-white">
+                                    <path fill="none" d="M0 0h24v24H0z"></path>
+                                    <path d="M9.954 2.21a9.99 9.99 0 0 1 4.091-.002A3.993 3.993 0 0 0 16 5.07a3.993 3.993 0 0 0 3.457.261A9.99 9.99 0 0 1 21.5 8.876 3.993 3.993 0 0 0 20 12c0 1.264.586 2.391 1.502 3.124a10.043 10.043 0 0 1-2.046 3.543 3.993 3.993 0 0 0-3.456.261 3.993 3.993 0 0 0-1.954 2.86 9.99 9.99 0 0 1-4.091.004A3.993 3.993 0 0 0 8 18.927a3.993 3.993 0 0 0-3.457-.26A9.99 9.99 0 0 1 2.5 15.121 3.993 3.993 0 0 0 4 11.999a3.993 3.993 0 0 0-1.502-3.124 10.043 10.043 0 0 1 2.046-3.543A3.993 3.993 0 0 0 8 5.071a3.993 3.993 0 0 0 1.954-2.86zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
+                                </svg>
+                                <span class="mt-1 font-display text-sm text-jacarta-700 dark:text-white">Edit Profile</span>
+                            </a>
+                            <label for="logout_btn" class="flex items-center space-x-2 rounded-xl px-5 py-2 transition-colors hover:bg-jacarta-50 hover:text-accent focus:text-accent dark:hover:bg-jacarta-600 cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-4 w-4 fill-jacarta-700 transition-colors dark:fill-white">
+                                    <path fill="none" d="M0 0h24v24H0z"></path>
+                                    <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zM7 11V8l-5 4 5 4v-3h8v-2H7z"></path>
+                                </svg>
+                                <span class="mt-1 font-display text-sm text-jacarta-700 dark:text-white">Sign out</span>
+                            </label>
+                            <form action="/logout" method="post" hx-boost="false" class="hidden">
+                                <AntiforgeryToken/>
+                                <button type="submit" class="hidden" id="logout_btn">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <a href="/login" class="dropdown-toggle group ml-2 flex h-10 w-10 items-center justify-center rounded-full border border-jacarta-100 bg-white transition-colors hover:border-transparent hover:bg-accent focus:border-transparent focus:bg-accent dark:border-transparent dark:bg-white/[.15] dark:hover:bg-accent">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-4 w-4 fill-jacarta-700 transition-colors group-hover:fill-white group-focus:fill-white dark:fill-white">
+                                <path fill="none" d="M0 0h24v24H0z"></path>
+                                <path d="M11 14.062V20h2v-5.938c3.946.492 7 3.858 7 7.938H4a8.001 8.001 0 0 1 7-7.938zM12 13c-3.315 0-6-2.685-6-6s2.685-6 6-6 6 2.685 6 6-2.685 6-6 6z"></path>
+                            </svg>
+                        </a>
+                    }
+                </div>
+
+                <!-- Dark Mode -->
+                <a href="#" class="js-dark-mode-trigger group ml-2 flex h-10 w-10 items-center justify-center rounded-full border border-jacarta-100 bg-white transition-colors hover:border-transparent hover:bg-accent focus:border-transparent focus:bg-accent dark:border-transparent dark:bg-white/[.15] dark:hover:bg-accent" aria-label="dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="dark-mode-light h-4 w-4 fill-jacarta-700 transition-colors group-hover:fill-white group-focus:fill-white dark:hidden">
+                        <path fill="none" d="M0 0h24v24H0z"></path>
+                        <path d="M11.38 2.019a7.5 7.5 0 1 0 10.6 10.6C21.662 17.854 17.316 22 12.001 22 6.477 22 2 17.523 2 12c0-5.315 4.146-9.661 9.38-9.981z"></path>
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="dark-mode-dark hidden h-4 w-4 fill-jacarta-700 transition-colors group-hover:fill-white group-focus:fill-white dark:block dark:fill-white">
+                        <path fill="none" d="M0 0h24v24H0z"></path>
+                        <path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        <div class="ml-auto flex lg:hidden">
+
+            <!-- Profile -->
+            <a href="edit-profile.html" class="group ml-2 flex h-10 w-10 items-center justify-center rounded-full border border-jacarta-100 bg-white transition-colors hover:border-transparent hover:bg-accent focus:border-transparent focus:bg-accent dark:border-transparent dark:bg-white/[.15] dark:hover:bg-accent" aria-label="profile">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-4 w-4 fill-jacarta-700 transition-colors group-hover:fill-white group-focus:fill-white dark:fill-white">
+                    <path fill="none" d="M0 0h24v24H0z"></path>
+                    <path d="M11 14.062V20h2v-5.938c3.946.492 7 3.858 7 7.938H4a8.001 8.001 0 0 1 7-7.938zM12 13c-3.315 0-6-2.685-6-6s2.685-6 6-6 6 2.685 6 6-2.685 6-6 6z"></path>
+                </svg>
+            </a>
+
+            <!-- Dark Mode -->
+            <a href="#" class="js-dark-mode-trigger group ml-2 flex h-10 w-10 items-center justify-center rounded-full border border-jacarta-100 bg-white transition-colors hover:border-transparent hover:bg-accent focus:border-transparent focus:bg-accent dark:border-transparent dark:bg-white/[.15] dark:hover:bg-accent" aria-label="dark">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="dark-mode-light h-4 w-4 fill-jacarta-700 transition-colors group-hover:fill-white group-focus:fill-white dark:hidden">
+                    <path fill="none" d="M0 0h24v24H0z"></path>
+                    <path d="M11.38 2.019a7.5 7.5 0 1 0 10.6 10.6C21.662 17.854 17.316 22 12.001 22 6.477 22 2 17.523 2 12c0-5.315 4.146-9.661 9.38-9.981z"></path>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="dark-mode-dark hidden h-4 w-4 fill-jacarta-700 transition-colors group-hover:fill-white group-focus:fill-white dark:block dark:fill-white">
+                    <path fill="none" d="M0 0h24v24H0z"></path>
+                    <path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"></path>
+                </svg>
+            </a>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="js-mobile-toggle group ml-2 flex h-10 w-10 items-center justify-center rounded-full border border-jacarta-100 bg-white transition-colors hover:border-transparent hover:bg-accent focus:border-transparent focus:bg-accent dark:border-transparent dark:bg-white/[.15] dark:hover:bg-accent" aria-label="open mobile menu">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-4 w-4 fill-jacarta-700 transition-colors group-hover:fill-white group-focus:fill-white dark:fill-white">
+                    <path fill="none" d="M0 0h24v24H0z"></path>
+                    <path d="M18 18v2H6v-2h12zm3-7v2H3v-2h18zm-3-7v2H6V4h12z"></path>
+                </svg>
+            </button>
+        </div>
+
+    </div>
+</header>

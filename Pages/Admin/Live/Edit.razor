@@ -1,0 +1,279 @@
+@page "/admin/live/edit/{Id:int}"
+@using Affiliate.Application.Dtos
+@using Mapster
+@inject DatabaseContext DbContext
+@attribute [Authorize(Policy = CustomPolicies.MasterAdminAccess)]
+@inject NavigationManager NavigationManager
+
+<PageTitle>@PageTitle</PageTitle>
+
+<Toolbar PageTitle="@PageTitle" ToolbarItems="@ToolbarItems"></Toolbar>
+
+<div class="card card-compact w-100 bg-base-100 shadow-xl">
+    <div class="card-body">
+        <div id="alert"></div>
+        <form id="LivestreamForm" data-enhance name="PageForm" enctype="multipart/form-data">
+            <div class="space-y-4">
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-2 space-y-2">
+                        <div>
+                            <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+                            <input id="title" name="Title" value="@Form.Title" placeholder="Title" class="input input-bordered w-full"/>
+                        </div>
+                        <div>
+                            <label for="slug" class="block text-sm font-medium text-gray-700">Slug</label>
+                            <input id="slug" name="Slug" value="@Form.Slug" placeholder="Slug" class="input input-bordered w-full"/>
+                        </div>
+                        <div class="columns-2">
+                            <div>
+                                <label for="player1Name" class="block text-sm font-medium text-gray-700">Title</label>
+                                <input id="player1Name" name="Player1Name" value="@Form.Player1Name" placeholder="Player 1" class="input input-bordered w-full"/>
+                            </div>
+                            <div>
+                                <label for="player2Name" class="block text-sm font-medium text-gray-700">Title</label>
+                                <input id="player2Name" name="Player2Name" value="@Form.Player2Name" placeholder="Player 2" class="input input-bordered w-full"/>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="livestreamInput" class="block text-sm font-medium text-gray-700">Embed code</label>
+                            <textarea id="livestreamInput" name="LivestreamInput" class="input input-bordered w-full h-32">@Form.LivestreamInput</textarea>
+                        </div>
+                        <div>
+                            <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+                            <textarea id="content" name="Content" class="input input-bordered w-full h-32 hidden">@Form.Content</textarea>
+                            <div id="content-editor" style="height: 400px;"></div>
+                        </div>
+                    </div>
+                    <div class="col-span-1 space-y-2">
+                        <div>
+                            <div class="form-control">
+                                <label class="label cursor-pointer">
+                                    <span class="label-text">Publish</span>
+                                    <input type="checkbox" id="publish" name="Publish" class="checkbox checkbox-primary text-base-100"/>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="startTime" class="block text-sm font-medium text-gray-700">Live start</label>
+                            <div class="join w-full">
+                                <div class="w-full">
+                                    <div>
+                                        <input type="text" name="StartTimeStr" id="startTime" value="@Form.StartTime" class="input input-bordered w-full datetime"/>
+                                    </div>
+                                </div>
+                                <div class="indicator">
+                                    <button type="button" class="btn join-item set-current-time">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="closeTime" class="block text-sm font-medium text-gray-700">Live end</label>
+                            <div class="join w-full">
+                                <div class="w-full">
+                                    <div>
+                                        <input type="text" name="CloseTimeStr" id="closeTime" value="@Form.CloseTime" class="input input-bordered w-full datetime"/>
+                                    </div>
+                                </div>
+                                <div class="indicator">
+                                    <button type="button" class="btn join-item set-current-time">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="availableTimeStart" class="block text-sm font-medium text-gray-700">Bet start</label>
+                            <div class="join w-full">
+                                <div class="w-full">
+                                    <div>
+                                        <input type="text" name="AvailableTimeStartStr" id="availableTimeStart" value="@Form.AvailableTimeStart" class="input input-bordered w-full datetime"/>
+                                    </div>
+                                </div>
+                                <div class="indicator">
+                                    <button type="button" class="btn join-item set-current-time">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="availableTimeEnd" class="block text-sm font-medium text-gray-700">Bet end</label>
+                            <div class="join w-full">
+                                <div class="w-full">
+                                    <div>
+                                        <input type="text" name="AvailableTimeEndStr" id="availableTimeEnd" value="@Form.AvailableTimeEnd" class="input input-bordered w-full datetime"/>
+                                    </div>
+                                </div>
+                                <div class="indicator">
+                                    <button type="button" class="btn join-item set-current-time">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="file" class="block text-sm font-medium text-gray-700">Thumbnail</label>
+                            <div>
+                                <div class="w-full">
+                                    <input type="file" accept="image/*" id="file" name="File" class="file-input file-input-bordered file-input-primary w-full"/>
+                                </div>
+                                <div class="w-full">
+                                    @if (!string.IsNullOrEmpty(Form?.Image))
+                                    {
+                                        <img src="@Form.Image" class="w-fit"/>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <button class="btn btn-neutral" type="button" onclick="submitForm()">Create</button>
+                </div>
+            </div>
+            <AntiforgeryToken/>
+        </form>
+    </div>
+</div>
+
+<SectionContent SectionName="section-bottom">
+    <link href="/js/select2/select2.min.css" rel="stylesheet"/>
+    <link href="/js/quill/quill.snow.css" rel="stylesheet">
+    <script src="/js/jquery-3.7.1.min.js"></script>
+    <script src="/js/select2/select2.min.js"></script>
+    <script src="/js/quill/quill.js"></script>
+
+    <script >
+        const quill = new Quill('#content-editor', {
+           theme: 'snow',
+           modules: {
+             toolbar: [
+                  ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+                  ['blockquote', 'code-block'],
+                  ['link', 'image', 'video', 'formula'],
+      
+                  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                  [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+                  [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+      
+                  [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+                  [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      
+                  [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+                  [{ 'align': [] }],
+      
+                  ['clean']                                         // remove formatting button
+              ]
+           },
+        });        
+        async function submitForm() {
+            const form = document.getElementById('LivestreamForm');
+            const quillContent = document.querySelector('#content-editor .ql-editor').innerHTML;
+            document.getElementById('content').value = quillContent;
+            const formData = new FormData(form);
+            formData.set('IsShow', document.getElementById('publish').checked);
+
+            try {
+                const response = await fetch('/api/live', {
+                    method: 'PUT',
+                    body: formData
+                });
+                const data = await response.json().then(data => data);
+                if (data.ok) {
+                    globalCommons.CreateAlert('Form submitted successfully', 'success',document.querySelector('#alert'));
+                    window.location.href = '/admin/live/edit/' + data.id;
+                } else {
+                    globalCommons.CreateAlert('Form submitted failed', 'error',document.querySelector('#alert'));
+                }
+            } catch (error) {
+                console.error('An error occurred during form submission:', error);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const textareaContent = document.getElementById('content').value;
+            quill.root.innerHTML = textareaContent;
+            
+            document.getElementById('title').addEventListener('input', function() {
+                document.getElementById('slug').value = globalCommons.ToSlug(this.value);
+            })
+            
+            setTimeout(()=>{
+                globalCommons.InputMask('datetime', {
+                    inputFormat: 'dd/MM/yyyy HH:MM'
+                },document.querySelectorAll('.datetime'));
+            },500);
+            
+            function formatDate(date) {
+                const day = date.getDate();
+                const month = date.getMonth() + 1;
+                const year = date.getFullYear();
+            
+                return padZero(day) + '/' + padZero(month) + '/' + year;
+              }
+            
+            function formatTime(date) {
+                const hours = date.getHours();
+                const minutes = date.getMinutes();
+            
+                return padZero(hours) + ':' + padZero(minutes);
+              }
+            
+            function padZero(number) {
+                return number.toString().padStart(2, '0');
+            }
+            
+            $(document).ready(function() {
+                $('.set-current-time').click(function() {
+                    const currentDate = new Date();
+                    const formattedDate = formatDate(currentDate);
+                    const formattedTime = formatTime(currentDate);
+                    const dateTime = `${formattedDate} ${formattedTime}`;
+                    $(this).closest('.join').find('input').val(dateTime);
+                });
+                document.getElementById('title').addEventListener('input', function() {
+                    document.getElementById('slug').value = globalCommons.ToSlug(this.value);
+                })
+            });
+        });
+    </script>
+</SectionContent>
+
+@code {
+    [Parameter] public int Id { get; set; } = 1;
+    private LivePostFormDto? Form { get; set; } = new();
+    private string PageTitle { get; set; }
+
+    private List<ToolbarItem> ToolbarItems { get; set; } =
+    [
+        new ToolbarItem { Href = "/admin/live/create", Text = "Add Livestream", ClassList = "btn btn-primary text-base-100" },
+        new ToolbarItem { Href = "/admin/live", Text = "Back to Livestream List", ClassList = "btn btn-neutral text-base-100" }
+    ];
+
+    protected override void OnInitialized()
+    {
+        Form ??= new LivePostFormDto();
+        var livestream = DbContext.Livestreams.Find(Id);
+        if (livestream == null || livestream.IsDelete)
+        {
+            NavigationManager.NavigateTo("/admin/live");
+        }
+        else
+        {
+            Form = livestream.Adapt<LivePostFormDto>();
+        }
+
+        PageTitle = $"Edit Live " + Form.Title;
+    }
+    
+}

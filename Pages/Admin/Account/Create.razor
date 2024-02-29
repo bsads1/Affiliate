@@ -2,7 +2,7 @@
 @using Affiliate.Application.Dtos
 @attribute [Authorize(Policy = CustomPolicies.MasterAdminAccess)]
 @inject DatabaseContext DbContext
-
+<PageTitle>@PageTitle</PageTitle>
 <style>
     .select2-results{
         background: #fff;
@@ -26,11 +26,11 @@
                 </div>
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <input id="password" name="Password" placeholder="Password" class="input input-bordered w-full max-w-xs"/>
+                    <input type="password" id="password" name="Password" placeholder="Password" class="input input-bordered w-full max-w-xs"/>
                 </div>
                 <div>
                     <label for="repeatPassword" class="block text-sm font-medium text-gray-700">Repeat Password</label>
-                    <input id="repeatPassword" name="RepeatPassword" placeholder="Repeat Password" class="input input-bordered w-full max-w-xs"/>
+                    <input type="password" id="repeatPassword" name="RepeatPassword" placeholder="Repeat Password" class="input input-bordered w-full max-w-xs"/>
                 </div>
                 <div>
                     <label for="roleSelect" class="block text-sm font-medium text-gray-700">Roles</label>
@@ -48,13 +48,15 @@
                     <button class="btn btn-neutral btn-save" type="button" onclick="submitForm()">Create</button>
                 </div>
             </div>
+            <AntiforgeryToken/>
         </form>
     </div>
 </div>
 
 <SectionContent SectionName="section-bottom">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script> <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="/js/select2/select2.min.css" rel="stylesheet"/>
+    <script src="/js/jquery-3.7.1.min.js"></script> 
+    <script src="/js/select2/select2.min.js"></script>
 
     <script > 
         async function submitForm() {
@@ -81,7 +83,7 @@
                 console.error('An error occurred during form submission:', error);
             }
         }
-        $(function () {
+        document.addEventListener("DOMContentLoaded", function() {
             $('#roleSelect').select2({
                 selectionCssClass: 'input input-bordered w-full max-w-xs h-fit',
                 dropdownCssClass: 'input input-bordered w-full max-w-xs',
@@ -105,7 +107,7 @@
 
     private List<ToolbarItem> ToolbarItems { get; set; } =
     [
-        new ToolbarItem { Href = "/admin/account", Text = "Back to Accounts List", ClassList = "btn btn-neutral" }
+        new ToolbarItem { Href = "/admin/account", Text = "Back to Accounts List", ClassList = "btn btn-neutral text-base-100" }
     ];
 
     protected override void OnInitialized()

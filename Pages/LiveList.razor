@@ -1,0 +1,71 @@
+@page "/live-list/{Page:int?}"
+@using Microsoft.EntityFrameworkCore
+@using Affiliate.Application.Extensions.Paging
+@layout WebLayout
+@inject DatabaseContext DbContext
+@inject NavigationManager NavigationManager
+
+<PageTitle>@PageTitle</PageTitle>
+
+<section class="relative lg:pb-96">
+    <div class="container">
+        <div class="grid grid-cols-1 gap-[1.875rem] sm:grid-cols-2 md:grid-cols-3">
+            @if (Livestreams.Any())
+            {
+                foreach (var livestream in Livestreams)
+                {
+                    <article>
+                        <div class="overflow-hidden rounded-2.5xl transition-shadow hover:shadow-lg">
+                            <figure class="group overflow-hidden">
+                                <a href="/live/@livestream.Slug">
+                                    <img src="/@livestream.Image" alt="@livestream.Title" class="h-full w-full object-cover transition-transform duration-[1600ms] will-change-transform group-hover:scale-105">
+                                </a>
+                            </figure>
+
+                            <div class="rounded-b-[1.25rem] border border-t-0 border-jacarta-100 bg-white p-[10%] dark:border-jacarta-600 dark:bg-jacarta-700">
+                                <h2 class="mb-4 font-display text-xl text-jacarta-700 hover:text-accent dark:text-white dark:hover:text-accent">
+                                    <a href="/live/@livestream.Slug">@livestream.Title</a>
+                                    @if (IsLive(livestream))
+                                    {
+                                        <span class="rounded bg-red py-1 px-2 ml-2 text-xxs font-bold uppercase leading-none text-white">Live</span>
+                                    }
+                                </h2>
+                                <div class="flex flex-wrap items-center space-x-2 text-sm text-jacarta-400">
+                                    <span>
+                                        <time datetime="@livestream.CreatedAt.ToString("dd-MM-yyyy")">@livestream.CreatedAt.ToString("dd-MM-yyyy HH:mm")</time>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                }
+            }
+        </div>
+        <div class="mt-10 text-center">
+            <a href="/live" class="inline-block rounded-full bg-accent py-3 px-8 text-center font-semibold text-white shadow-accent-volume transition-all hover:bg-accent-dark">Load More</a>
+        </div>
+    </div>
+</section>
+
+@code {
+    [Parameter] public int? Page { get; set; } = 1;
+    private string? PageTitle { get; set; }
+    private PaginatedList<Livestream> Livestreams { get; set; } = [];
+    
+    private bool IsLive(Livestream livestream)
+    {
+        return livestream.StartTime < DateTime.Now && livestream.CloseTime > DateTime.Now;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Page < 1) Page = 1;
+        var pageItem = DbContext.Livestreams
+            .AsNoTracking()
+            .OrderBy(p => p.CreatedAt)
+            .Where(p => p.IsDelete == false);
+        Livestreams = await pageItem.ToPaginatedListAsync(Page??1, 10);
+        PageTitle = "Latest Livestream";
+    }
+
+}

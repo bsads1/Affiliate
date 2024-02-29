@@ -8,7 +8,10 @@
         "autoprefixer": "^10.4.16",
         "daisyui": "^4.4.19",
         "postcss": "^8.4.32",
-        "tailwindcss": "^3.3.6",
-        "vite": "^5.0.10"
+        "tailwindcss": "^3.4.1",
+        "vite": "^5.0.12"
+    },
+    "dependencies": {
+        "inputmask": "^5.0.8"
     }
 }

@@ -1,27 +1,25 @@
 ﻿@page "/"
+@layout WebLayout
+
 @code {
+    [CascadingParameter] public HttpContext Context { get; set; }
+    [CascadingParameter] public PageState PageState { get; set; } = default!;
+
     protected override void OnInitialized()
     {
-        Log.Information("This is the homepage.");
+        //Log.Information("This is the homepage.");
     }
+
 }
 
-<PageTitle>Home</PageTitle>
+<PageTitle>@PageState.Config?.PageName</PageTitle>
 
-<section>
-    <article>
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body space-y-6">
-                <h1 class="text-3xl font-bold">
-                    Build something beautiful
-                </h1>
-                <p>
-                    Spark picks up where ASP.NET leaves off. Build production ready, full-stack web applications fast.
-                </p>
-                <p>
-                    View the <a class="link" href="https://spark-framework.net" target="_blank">documentation →</a>
-                </p>
-            </div>
-        </div>
-    </article>
-</section>
+<div class="container h-full">
+    <div class="mx-auto max-w-2xl py-16 text-center">
+        <h1 class="mb-8 font-display text-4xl font-medium text-jacarta-700 dark:text-white">About Xhibiter</h1>
+        <p class="text-lg leading-normal dark:text-jacarta-300">
+            Every digital creation available through MakersPlace is an authentic and truly unique digital creation,
+            signed and issued by the creator — made possible by blockchain technology.
+        </p>
+    </div>
+</div>

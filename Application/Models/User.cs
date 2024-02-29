@@ -1,5 +1,7 @@
-﻿using Spark.Library.Database;
+﻿using System.ComponentModel.DataAnnotations;
+using Spark.Library.Database;
 using System.ComponentModel.DataAnnotations.Schema;
+using Affiliate.Application.Extensions;
 
 namespace Affiliate.Application.Models;
 
@@ -19,11 +21,12 @@ public class User : ExtendModel
     public string? RememberToken { get; set; }
 
     public DateTime? EmailVerifiedAt { get; set; }
-    
+
     public long Points { get; set; }
 
     public virtual ICollection<UserRole> UserRoles { get; set; }
 
-    [NotMapped]
-    public bool IsAuthenticated { get; set; }
+    public bool IsDelete { get; set; } = false;
+    [StringLength(10)] public string Uid { get; set; } = GuidExtension.TaoUid();
+    [NotMapped] public bool IsAuthenticated { get; set; }
 }

@@ -1,0 +1,137 @@
+@page "/admin/live/{Page:int?}"
+@using Affiliate.Application.Dtos
+@using Affiliate.Application.Extensions.Paging
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize(Policy = CustomPolicies.MasterAdminAccess)]
+@inject DatabaseContext DbContext
+<PageTitle>Live manager</PageTitle>
+<Toolbar PageTitle="@PageTitle" ToolbarItems="@ToolbarItems"></Toolbar>
+<table class="w-full bg-white shadow-md rounded my-6">
+    <thead>
+    <tr>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">#</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Name</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Slug</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Updated</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-right">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @if (_pages.Any())
+    {
+        var stt = Page * 10 - 9;
+        foreach (var livestream in _pages)
+        {
+            <tr>
+                <td class="py-2 px-4 border-b border-gray-200">@stt</td>
+                <td class="py-2 px-4 border-b border-gray-200">@livestream.Title</td>
+                <td class="py-2 px-4 border-b border-gray-200">/@livestream.Slug</td>
+                <td class="py-2 px-4 border-b border-gray-200">@livestream.UpdatedAt</td>
+                <td class="py-2 px-4 border-b border-gray-200 text-right">
+                    <div class="flex justify-end gap-2">
+                        <a class="btn btn-sm btn-primary text-base-100" href="@($"/admin/live/edit/{livestream.Id}")">Edit</a>
+                        <a class="btn btn-sm btn-error text-base-100" onclick="dialog.open(@livestream.Id);" href="javascript:">Delete</a>
+                    </div>
+                </td>
+            </tr>
+            stt++;
+        }
+    }
+    </tbody>
+</table>
+<div class="flex justify-center mt-3">
+    <Pagination Route="@Route" CurrentPage="@Page" TotalPage="@_pages.TotalPages"/>
+</div>
+<dialog id="delete_modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Delete!</h3>
+        <div id="delete_result"></div>
+        <div class="modal-action">
+            <button class="btn btn-error" type="button" onclick="dialog.confirmDelete();">Confirm Delete</button>
+            <button class="btn" type="button" onclick="dialog.close();">Close</button>
+        </div>
+    </div>
+</dialog>
+
+<script >
+const dialog = (function () {
+    let usr = 0;
+    let success = false;
+    const modal = document.getElementById("delete_modal");
+    modal.addEventListener("close", (event) => {
+        usr = 0;
+        if (success) {
+            window.location.reload();
+        }
+    });
+    
+    function deleteUser() {
+        const formData = new FormData();
+        formData.append('Id', usr);
+        const options = {
+            method: 'DELETE',
+            body: formData
+        };
+        const target = modal.querySelector('.modal-box');
+        globalCommons.ShowLoading(target);
+
+        fetch('/api/live', options)
+            .then(response => response.json())
+            .then(data => {
+                globalCommons.HideLoading(target);
+                if (data.ok) {
+                    success = true;
+                    globalCommons.CreateAlert('Page deleted successfully', 'success', document.querySelector('#delete_result'));
+                    setTimeout(function (){
+                        window.location.reload();
+                    },2000)
+                } else {
+                    globalCommons.CreateAlert('Failed to delete page', 'error', document.querySelector('#delete_result'));
+                }
+            })
+            .catch(error => {
+                globalCommons.HideLoading(target);
+                globalCommons.CreateAlert('An error occurred during the delete request: '+ error, 'error', document.querySelector('#delete_result'));
+            });
+
+    }
+
+    function openDeleteDialog(id) {
+        usr = id;
+        modal.showModal()
+    }
+
+    return {
+        open: openDeleteDialog,
+        close: () => {
+            modal.close();
+        },
+        confirmDelete: deleteUser
+    }
+})();
+</script>
+
+@code {
+
+    [Parameter] public int Page { get; set; } = 1;
+    private string? PageTitle { get; set; }
+
+    private List<ToolbarItem> ToolbarItems { get; set; } =
+    [
+        new ToolbarItem { Href = "/admin/live/create", Text = "Create Live", ClassList = "btn btn-neutral text-base-100" }
+    ];
+
+    private const string Route = "/admin/live/{0}";
+    PaginatedList<Livestream> _pages = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Page < 1) Page = 1;
+        PageTitle = "Live manager";
+        var queryable = DbContext.Livestreams.AsNoTracking()
+            .Where(p => p.IsDelete == false)
+            .OrderByDescending(p => p.CreatedAt);
+        _pages = await queryable.ToPaginatedListAsync(Page, 10);
+    }
+
+}

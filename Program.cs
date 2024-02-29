@@ -34,7 +34,7 @@ if (!app.Environment.IsDevelopment())
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseViteDevMiddleware();
+    app.UseViteDevelopmentServer(true);
 }
 
 app.UseSerilogRequestLogging();

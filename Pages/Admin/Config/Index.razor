@@ -1,0 +1,121 @@
+@page "/admin/config"
+@inject DatabaseContext DbContext
+
+@code {
+    ConfigPage? Config { get; set; } = new();
+    private string PageTitle { get; set; } = "Config Page";
+
+    protected override void OnInitialized()
+    {
+        Config = DbContext.ConfigPages.FirstOrDefault();
+    }
+
+}
+
+<PageTitle>@PageTitle</PageTitle>
+
+<Toolbar PageTitle="@PageTitle"></Toolbar>
+
+<div class="card card-compact w-100 bg-base-100 shadow-xl">
+    <div class="card-body">
+        <div id="alert"></div>
+        <form class="space-y-6" enctype="multipart/form-data" id="ConfigForm">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="w-full space-y-6">
+                    <div>
+                        <label for="pageName" class="block text-sm font-medium text-gray-700">Page Name</label>
+                        <input value="@Config?.PageName" type="text" id="pageName" name="PageName" class="input input-bordered w-full">
+                    </div>
+
+                    <div>
+                        <label for="logo" class="block text-sm font-medium text-gray-700">Logo</label>
+                        <div class="columns-2">
+                            <div class="w-full">
+                                <input type="file" accept="image/*" id="logo" name="FileLogo" class="file-input file-input-bordered file-input-primary w-full"/>
+                            </div>
+                            <div class="w-full">
+                                @if (!string.IsNullOrEmpty(Config?.Logo))
+                                {
+                                    <img src="@Config.Logo" class="w-fit"/>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="favicon" class="block text-sm font-medium text-gray-700">Favicon</label>
+                        <div class="columns-2">
+                            <div class="w-full">
+                                <input type="file" accept="image/*" id="favicon" name="FileFavicon" class="file-input file-input-bordered file-input-primary w-full"/>
+                            </div>
+                            <div class="w-full">
+                                @if (!string.IsNullOrEmpty(Config?.Favicon))
+                                {
+                                    <img src="@Config.Favicon" class="w-fit"/>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full space-y-6">
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea id="description" name="Description" class="input input-bordered w-full h-32">@Config?.Description</textarea>
+                    </div>
+
+                    <div>
+                        <label for="author" class="block text-sm font-medium text-gray-700">Author</label>
+                        <input value="@Config?.Author" type="text" id="author" name="Author" class="input input-bordered w-full">
+                    </div>
+
+                    <div>
+                        <label for="keywords" class="block text-sm font-medium text-gray-700">Keywords</label>
+                        <input value="@Config?.Keywords" type="text" id="keywords" name="Keywords" class="input input-bordered w-full">
+                    </div>
+
+                    <div>
+                        <label for="additionalMeta" class="block text-sm font-medium text-gray-700">Additional Meta</label>
+                        <textarea id="additionalMeta" name="AdditionalMeta" class="input input-bordered w-full h-32">@Config?.AdditionalMeta</textarea>
+                    </div>
+                    <div>
+                        <label for="customCss" class="block text-sm font-medium text-gray-700">Custom CSS</label>
+                        <textarea id="customCss" name="CustomCss" class="input input-bordered w-full h-32">@Config?.CustomCss</textarea>
+                    </div>
+
+                    <div>
+                        <label for="customJs" class="block text-sm font-medium text-gray-700">Custom JS</label>
+                        <textarea id="customJs" name="CustomJs" class="input input-bordered w-full h-32">@Config?.CustomJs</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-right">
+                <button class="btn btn-neutral" type="button" onclick="submitForm()">Update</button>
+            </div>
+            <AntiforgeryToken/>
+        </form>
+    </div>
+</div>
+<SectionContent SectionName="section-bottom">
+    <script >
+        async function submitForm() {
+            const form = document.getElementById('ConfigForm');
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json().then(data => data);
+                if (data.ok) {
+                    globalCommons.CreateAlert('Form submitted successfully', 'success',document.querySelector('#alert'));
+                } else {
+                    globalCommons.CreateAlert('Form submitted failed', 'error',document.querySelector('#alert'));
+                }
+            } catch (error) {
+                console.error('An error occurred during form submission:', error);
+            }
+        }
+    </script>
+</SectionContent>

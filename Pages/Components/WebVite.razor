@@ -1,0 +1,17 @@
+﻿@using Microsoft.Extensions.Hosting;
+@using global::Vite.AspNetCore
+@inject IWebHostEnvironment Env
+@inject IViteManifest Manifest
+@inject IViteDevServerStatus DevServerStatus
+
+@if (Env.IsDevelopment())
+{
+    <script type="module" src="@DevServerStatus.ServerUrlWithBasePath/@@vite/client"></script>
+    <link rel="stylesheet" href="@DevServerStatus.ServerUrlWithBasePath/Assets/Css/main.css">
+    <script type="module" src="@DevServerStatus.ServerUrlWithBasePath/Assets/Js/app.js"></script>
+}
+else
+{
+    <link rel="stylesheet" href="/assets/main.css" />
+    <script type="module" src="/assets/app.js"></script>
+}

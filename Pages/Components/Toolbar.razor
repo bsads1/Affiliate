@@ -2,14 +2,14 @@
 @using Affiliate.Application.Enums
 @inject NavigationManager NavigationManager
 
-<div class="navbar bg-base-100 mb-5 shadow-xl rounded">
+<div class="navbar bg-base-100 mb-5 shadow-md rounded">
     <div class="navbar-start">
         <div class="prose">
             <h3>@PageTitle</h3>
         </div>
     </div>
     <div class="navbar-end gap-2">
-        @if (ToolbarItems.Count > 0)
+        @if (ToolbarItems is { Count: > 0 })
         {
             foreach (var toolbarItem in ToolbarItems)
             {

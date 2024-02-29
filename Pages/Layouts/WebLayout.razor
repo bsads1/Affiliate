@@ -1,0 +1,45 @@
+﻿@inherits LayoutComponentBase
+
+@code{
+    [CascadingParameter] public PageState PageState { get; set; } = default!;
+}
+
+<!DOCTYPE html>
+<html lang="en" data-theme="corporate">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <base href="/"/>
+    <link rel="icon" type="image/png" href="@PageState.Config?.Favicon"/>
+
+    <!--author-->
+    <meta name="author" content="@PageState.Config?.Author"/>
+    <!--description-->
+    <meta name="description" content="@PageState.Config?.Description"/>
+    <!--keywords-->
+    <meta name="keywords" content="@PageState.Config?.Keywords"/>
+    <!--additional meta as html raw string-->
+    @{
+        MarkupString additionalMeta = new MarkupString(PageState.Config?.AdditionalMeta ?? "");
+    }
+    @additionalMeta
+    <link rel="stylesheet" href="/css/style.css"/>
+    <script src="/js/darkMode.bundle.js"></script>
+    <WebVite/>
+    <HeadOutlet/>
+</head>
+
+<body class="overflow-x-hidden font-body text-jacarta-500 dark:bg-jacarta-900" itemscope>
+<WebNavBar/>
+<main>
+    <section class="relative pb-10 pt-20 md:pt-32 lg:h-[88vh]">
+        @Body
+    </section>
+</main>
+<FlashMessages/>
+<Debug/>
+<script src="/js/app.bundle.js"></script>
+<SectionOutlet SectionName="section-bottom"/>
+</body>
+</html>

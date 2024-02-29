@@ -1,0 +1,387 @@
+@page "/admin/points/{Page:int?}"
+@using Affiliate.Application.Dtos
+@using Affiliate.Application.Extensions
+@using Affiliate.Application.Extensions.Paging
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize(Policy = CustomPolicies.MasterAdminAccess)]
+@inject DatabaseContext DbContext
+@inject NavigationManager NavigationManager
+<PageTitle>User manager</PageTitle>
+<Toolbar PageTitle="@PageTitle" ToolbarItems="@ToolbarItems"></Toolbar>
+
+<form action="/admin/points/@Page" method="get" class="flex justify-between mb-4">
+    <div class="flex gap-4">
+        <div>
+            <input type="text" name="uid" class="input input-bordered w-full max-w-xs" placeholder="Filter by Uid"
+                   value="@UidFilter"/>
+        </div>
+        <div>
+            <input type="text" name="username" class="input input-bordered w-full max-w-xs" placeholder="Filter by Username"
+                   value="@UsernameFilter"/>
+        </div>
+        <div>
+            <input type="text" name="email" class="input input-bordered w-full max-w-xs" placeholder="Filter by Email"
+                   value="@EmailFilter"/>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary text-base-100">Apply Filter</button>
+</form>
+<table class="w-full bg-white shadow-md rounded my-6">
+    <thead>
+    <tr>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">#</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">ID</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Name</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Email</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Updated</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-right">Points</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-right">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @if (_pages.Any())
+    {
+        var stt = Page * 10 - 9;
+        foreach (var user in _pages)
+        {
+            <tr>
+                <td class="py-2 px-4 border-b border-gray-200">@stt</td>
+                <td class="py-2 px-4 border-b border-gray-200">@user.Uid</td>
+                <td class="py-2 px-4 border-b border-gray-200">
+                    @user.Name
+                    <input type="hidden" id="username_@user.Id" value="@user.Name @user.Uid">
+                </td>
+                <td class="py-2 px-4 border-b border-gray-200">@user.Email</td>
+                <td class="py-2 px-4 border-b border-gray-200">@user.UpdatedAt</td>
+                <td class="py-2 px-4 border-b border-gray-200 text-right">@user.Points.AddDecimalSeparator()</td>
+                <td class="py-2 px-4 border-b border-gray-200 text-right">
+                    <div class="flex justify-end gap-2">
+                        <a class="btn btn-sm btn-primary text-base-100" onclick="dialogAdd.open(@user.Id);" href="javascript:">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                                <path fill-rule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd"/>
+                            </svg>
+                        </a>
+                        <a class="btn btn-sm btn-error text-base-100" onclick="dialogMinus.open(@user.Id);" href="javascript:">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                                <path fill-rule="evenodd" d="M4.25 12a.75.75 0 0 1 .75-.75h14a.75.75 0 0 1 0 1.5H5a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd"/>
+                            </svg>
+                        </a>
+                        <a href="javascript:" class="btn btn-sm btn-neutral text-base-100" onclick="dialogDetail.open(@user.Id);">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
+                            </svg>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            stt++;
+        }
+    }
+    </tbody>
+</table>
+<div class="flex justify-center mt-3">
+    <Pagination Route="@Route" CurrentPage="@Page" TotalPage="@_pages.TotalPages"/>
+</div>
+
+<dialog id="add_point_modal" class="modal">
+    <div class="modal-box modal-box-add">
+        <h3 class="font-bold text-lg">Add Points to Account <span class="text-accent" id="username_add_point"></span></h3>
+        <div id="add_result"></div>
+        <div class="py-2">
+            <label>Points:</label>
+            <input type="text" name="point" class="input input-bordered input-success w-full number" placeholder="Points to add"/>
+        </div>
+        <div class="py-2">
+            <label>Money:</label>
+            <input type="text" name="money" class="input input-bordered input-success w-full number" placeholder="Money user spend"/>
+        </div>
+        <div class="py-2">
+            <label>Date and Time:</label>
+            <input type="text" data-field="datetime" name="datetime" class="input input-bordered w-full datetime"/>
+        </div>
+        <div class="py-2">
+            <label>Notes:</label>
+            <textarea name="description" class="input input-bordered w-full h-32"></textarea>
+        </div>
+        <div class="modal-action">
+            <button class="btn btn-primary text-base-100" type="button" onclick="dialogAdd.confirm();">Add Points</button>
+            <button class="btn" type="button" onclick="dialogAdd.close();">Close</button>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="minus_point_modal" class="modal">
+    <div class="modal-box modal-box-minus">
+        <h3 class="font-bold text-lg">Remove Points to Account <span class="text-accent" id="username_minus_point"></span></h3>
+        <div id="minus_result"></div>
+        <div class="py-2">
+            <label>Points:</label>
+            <input type="text" name="point" class="input input-bordered input-error w-full number" placeholder="Points to remove"/>
+        </div>
+        <div class="py-2">
+            <label>Money:</label>
+            <input type="text" name="money" class="input input-bordered input-error w-full number" placeholder="Money user spend"/>
+        </div>
+        <div class="py-2">
+            <label>Date and Time:</label>
+            <input type="text" data-field="datetime" name="datetime" class="input input-bordered w-full datetime"/>
+        </div>
+        <div class="py-2">
+            <label>Notes:</label>
+            <textarea name="description" class="input input-bordered w-full h-32"></textarea>
+        </div>
+        <div class="modal-action">
+            <button class="btn btn-error text-base-100" type="button" onclick="dialogMinus.confirm();">Remove Points</button>
+            <button class="btn" type="button" onclick="dialogMinus.close();">Close</button>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="detail_point_modal" class="modal">
+    <div class="modal-box modal-box-detail w-full max-w-[calc(1202px+((100vw-1202px)/2))]">
+        <h3 class="font-bold text-lg">Detail Point <span class="text-accent" id="username_detail_point"></span></h3>
+        <div id="detail_result"></div>
+        <div id="detail_list"></div>
+        <div class="modal-action">
+            <button class="btn" type="button" onclick="dialogDetail.close();">Close</button>
+        </div>
+    </div>
+</dialog>
+
+<SectionContent SectionName="section-bottom">
+<script > 
+//on load
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(()=>{
+        globalCommons.InputMask('decimal', {
+            groupSeparator: '.',
+            digits: 0,
+            min:0,
+            max:99999999999
+        },document.querySelectorAll('.number')); 
+        globalCommons.InputMask('datetime', {
+            inputFormat: 'dd/MM/yyyy HH:mm'
+        },document.querySelectorAll('.datetime'));
+    },500);
+    //on click on .datetime will select all text
+    document.querySelectorAll('.datetime').forEach(element => {
+        element.addEventListener('click', () => {
+            element.select();
+        })
+    })
+})
+const dialogAdd = (function () {
+    let usr = 0;
+    let success = false;
+    const modal = document.getElementById('add_point_modal');
+    modal.addEventListener('close', (event) => {
+        usr = 0;
+        if (success) {
+            //window.location.reload();
+        }
+    });
+    
+    function confirmAdd() {
+        const formData = new FormData();
+        formData.append('Id', usr);
+        formData.append('Points', document.querySelector('#add_point_modal input[name="point"]').value);
+        formData.append('Description', document.querySelector('#add_point_modal textarea[name="description"]').value);
+        formData.append('Money', document.querySelector('#add_point_modal input[name="money"]').value);
+        formData.append('DateTime', document.querySelector('#add_point_modal input[name="datetime"]').value);
+       
+        const options = {
+            method: 'PUT',
+            body: formData
+        };
+        const target = modal.querySelector('.modal-box-add');
+        globalCommons.ShowLoading(target);
+
+        fetch('/api/point', options)
+            .then(response => response.json())
+            .then(data => {
+                globalCommons.HideLoading(target);
+                if (data.ok) {
+                    success = true;
+                    modal.close();
+                    globalCommons.CreateToast('Added points successfully', 'success');
+                    setTimeout(()=>{window.location.reload();},2000);
+                } else {
+                    globalCommons.CreateAlert('Failed to add points', 'error', document.querySelector('#add_result'));
+                }
+            })
+            .catch(error => {
+                globalCommons.HideLoading(target);
+                globalCommons.CreateAlert('An error occurred during the delete request: '+ error, 'error', document.querySelector('#add_result'));
+            });
+
+    }
+
+    function openDialog(id) {
+        usr = id;
+        document.querySelector('#add_point_modal input[name="point"]').value = "";
+        document.querySelector('#add_point_modal textarea[name="description"]').value = "";
+        document.querySelector('#add_point_modal input[name="money"]').value = "";
+        document.querySelector('#add_point_modal input[name="datetime"]').value = '@DateTime.Now.ToString("dd/MM/yyyy HH:mm")';
+        document.querySelector('#username_add_point').innerText = document.querySelector('#username_'+id).value; 
+        modal.showModal();
+    }
+
+    return {
+        open: openDialog,
+        close: () => {
+            modal.close();
+        },
+        confirm: confirmAdd
+    }
+})();
+const dialogMinus = (function () {
+    let usr = 0;
+    let success = false;
+    const modal = document.getElementById("minus_point_modal");
+    modal.addEventListener('close', (event) => {
+        usr = 0;
+        if (success) {
+            //window.location.reload();
+        }
+    });
+    
+    function confirmMinus() {
+        const formData = new FormData();
+        formData.append('Id', usr);
+        formData.append('Points', "-" + document.querySelector('#minus_point_modal input[name="point"]').value);
+        formData.append('Description', document.querySelector('#minus_point_modal textarea[name="description"]').value);
+        formData.append('Money', document.querySelector('#minus_point_modal input[name="money"]').value);
+        formData.append('DateTime', document.querySelector('#minus_point_modal input[name="datetime"]').value);
+       
+        const options = {
+            method: 'PUT',
+            body: formData
+        };
+        const target = modal.querySelector('.modal-box-minus');
+        globalCommons.ShowLoading(target);
+
+        fetch('/api/point', options)
+            .then(response => response.json())
+            .then(data => {
+                globalCommons.HideLoading(target);
+                if (data.ok) {
+                    success = true;
+                    modal.close();
+                    globalCommons.CreateToast('Removed points successfully', 'success');
+                    setTimeout(()=>{window.location.reload();},2000);
+                } else {
+                    globalCommons.CreateAlert('Failed to remove points', 'error', document.querySelector('#minus_result'));
+                }
+            })
+            .catch(error => {
+                globalCommons.HideLoading(target);
+                globalCommons.CreateAlert('An error occurred during the delete request: '+ error, 'error', document.querySelector('#add_result'));
+            });
+    }
+
+    function openDialog(id) {
+        usr = id;
+        document.querySelector('#minus_point_modal input[name="point"]').value = "";
+        document.querySelector('#minus_point_modal textarea[name="description"]').value = "";
+        document.querySelector('#minus_point_modal input[name="money"]').value = "";
+        document.querySelector('#add_point_modal input[name="datetime"]').value = '@DateTime.Now.ToString("dd/MM/yyyy HH:mm")';
+        document.querySelector('#username_minus_point').innerText = document.querySelector('#username_'+id).value;
+        modal.showModal();
+    }
+
+    return {
+        open: openDialog,
+        close: () => {
+            modal.close();
+        },
+        confirm: confirmMinus
+    }
+})();
+const dialogDetail = (function () {
+    let usr = 0;
+    const modal = document.getElementById("detail_point_modal");
+    
+    function loadDetail(id) {
+        const target = modal.querySelector('.modal-box-detail');
+        globalCommons.ShowLoading(target);
+        document.querySelector('#detail_list').innerHTML = ""; 
+        document.querySelector('#username_detail_point').innerText = document.querySelector('#username_'+id).value;
+        fetch('/api/point-list/'+id)
+            .then(response => response.text())
+            .then(data => {
+                globalCommons.HideLoading(target);
+                document.querySelector('#detail_list').innerHTML = data;
+                modal.showModal();
+            })
+            .catch(error => {
+                globalCommons.HideLoading(target);
+                globalCommons.CreateAlert('An error occurred during the delete request: '+ error, 'error', document.querySelector('#detail_result'));
+            });
+    }
+    
+    function openDialog(id) {
+        usr = id;
+        loadDetail(id);
+        modal.showModal();
+    }
+    
+    return {
+        open: openDialog,
+        close: () => {
+            modal.close();
+        }
+    }
+})();
+</script>
+</SectionContent>
+
+@code {
+
+    [Parameter] public int Page { get; set; } = 1;
+    private string PageTitle { get; set; }
+    private string UidFilter { get; set; } = "";
+    private string UsernameFilter { get; set; } = "";
+    private string EmailFilter { get; set; } = "";
+
+    private List<ToolbarItem> ToolbarItems { get; set; } =
+    [
+        // new ToolbarItem { Href = "/admin/account/create", Text = "Create Account", ClassList = "btn btn-neutral text-base-100" }
+    ];
+
+    private const string Route = "/admin/points/{0}";
+    PaginatedList<User> _pages = [];
+    [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Page < 1) Page = 1;
+        PageTitle = "User points";
+        var uri = new UriBuilder(NavigationManager.Uri);
+        var queryParameters = QueryHelpers.ParseQuery(uri.Query);
+
+        UidFilter = queryParameters.TryGetValue("uid", out var uidValue) ? uidValue.ToString() : string.Empty;
+        UsernameFilter = queryParameters.TryGetValue("username", out var usernameValue) ? usernameValue.ToString() : string.Empty;
+        EmailFilter = queryParameters.TryGetValue("email", out var emailValue) ? emailValue.ToString() : string.Empty;
+
+        var queryable = DbContext.Users.AsNoTracking()
+            .Where(p => p.IsDelete == false);
+        if (!string.IsNullOrEmpty(UidFilter))
+        {
+            queryable = queryable.Where(p => p.Uid.Contains(UidFilter.ToUpper()));
+        }
+
+        if (!string.IsNullOrEmpty(UsernameFilter))
+        {
+            queryable = queryable.Where(p => p.Name.Contains(UsernameFilter));
+        }
+
+        if (!string.IsNullOrEmpty(EmailFilter))
+        {
+            queryable = queryable.Where(p => p.Email.Contains(EmailFilter));
+        }
+
+        _pages = await queryable.OrderByDescending(p => p.CreatedAt).ToPaginatedListAsync(Page, 10);
+    }
+
+}

@@ -5,8 +5,24 @@ namespace Affiliate.Application.Extensions.Paging;
 public class PaginatedList<T> : List<T>
 {
     public int PageIndex { get; private set; }
+    public int PageSize { get; private set; }
     public int TotalPages { get; private set; }
+    public int TotalItemCount { get; private set; }
     public int PageRange { get; set; } = 3;
+    
+    public int CalculateDescendingIndex()
+    {
+        int totalItemCount = TotalPages * PageSize;
+        if (TotalItemCount < totalItemCount)
+        {
+            return TotalItemCount;
+        }
+        else
+        {
+            var remainingItems = TotalItemCount % PageSize;
+            return TotalItemCount - remainingItems;
+        }
+    }
     
     public PaginatedList() { }
 
@@ -14,8 +30,9 @@ public class PaginatedList<T> : List<T>
     {
         PageIndex = pageIndex;
         TotalPages = (int)Math.Ceiling(count / (double)pageSize);
-
-        this.AddRange(items);
+        TotalItemCount = count;
+        PageSize = pageSize;
+        AddRange(items);
     }
 
     public bool HasPreviousPage => PageIndex > 1;

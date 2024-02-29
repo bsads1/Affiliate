@@ -11,6 +11,12 @@
 	  <Content Remove="Tests\**" />
 	  <EmbeddedResource Remove="Tests\**" />
 	  <None Remove="Tests\**" />
+	  <Content Update="Pages\Auth\Login.razor.bak">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	  </Content>
+	  <Content Update="Pages\Auth\Register.razor.bak">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -18,21 +24,26 @@
 		<PackageReference Include="Coravel" Version="5.0.2" />
 		<PackageReference Include="FluentValidation" Version="11.9.0" />
 		<PackageReference Include="Mapster" Version="7.4.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="8.0.1" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" Version="8.0.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+		<PackageReference Include="Nanoid" Version="3.0.0" />
+		<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
 		<PackageReference Include="Spark.Library" Version="1.0.3" />
-		<PackageReference Include="Vite.AspNetCore" Version="1.11.0" />
+		<PackageReference Include="Vite.AspNetCore" Version="1.12.0" />
+		<PackageReference Include="ZiggyCreatures.FusionCache" Version="0.25.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Folder Include="Storage\Logging\" />
 		<Folder Include="Storage\Mail\" />
 		<Folder Include="wwwroot\build\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="wwwroot\js\datetimepicker\DateTimePicker.min.css" />
+	  <_ContentIncludedByDefault Remove="wwwroot\js\datetimepicker\DateTimePicker.min.js" />
 	</ItemGroup>
 	
 	<Target Name="DebugEnsureNodeEnv" BeforeTargets="Build;PublishBuildAssets" Condition=" !Exists('node_modules') ">

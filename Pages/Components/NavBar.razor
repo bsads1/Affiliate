@@ -1,52 +1,94 @@
 ﻿@code {
 
-	[CascadingParameter] public PageState PageState { get; set; } = default!;
+    [CascadingParameter] public PageState PageState { get; set; } = default!;
 
 }
 
-<nav class="navbar px-4 sm:px-12 max-w-6xl mx-auto" x-data="{ desktopMenuOpen: false, mobileMenuOpen: false }">
-	<div class="flex-1">
-		<a href="/">
-			<ApplicationLogo/>
-		</a>
-	</div>
-	<div class="flex-none">
-		<ul class="menu menu-horizontal px-1">
-			@if (PageState.User.IsAuthenticated)
-			{
-				<li>
-					<details>
-						<summary>
-							@PageState.User.Name
-						</summary>
-						<ul class="p-2 bg-base-100 rounded-t-none z-10 right-0">
-							<li>
-								<a href="/dashboard">Dashboard</a>
-							</li>
-							<li>
-								<a href="/profile/edit" >Profile</a>
-							</li>
-							<li>
-			                    <form action="/logout" method="post" hx-boost="false">
-			                        <AntiforgeryToken />
-			                        <button type="submit">
-				                        Logout
-			                        </button>
-			                    </form>
-							</li>
-						</ul>
-					</details>
-				</li>
-			}
-			else
-			{
-				<li>
-					<a href="/login">Login</a>
-				</li>
-				<li>
-					<a href="/register">Register</a>
-				</li>
-			}
-		</ul>
-	</div>
+<nav class="navbar px-4 sm:px-12 max-w-12xl mx-auto" x-data="{ desktopMenuOpen: false, mobileMenuOpen: false }">
+    <div class="flex-none">
+        <a href="/">
+            <ApplicationLogo/>
+        </a>
+    </div>
+    <div class="navbar-center hidden lg:flex flex-1">
+        <ul class="menu menu-horizontal px-1">
+            <li>
+                <details>
+                    <summary>Home</summary>
+                    <ul>
+                        <li>
+                            <a href="/">Website</a>
+                        </li>
+                        <li>
+                            <a href="/admin">Admin</a>
+                        </li>
+                    </ul>
+                </details>
+            </li>
+            <li>
+                <a href="/admin/points">User points</a>
+            </li>
+            <li>
+                <a href="/admin/menu">Menu</a>
+            </li>
+            <li>
+                <a href="/admin/live">Live</a>
+            </li>
+            <li>
+                <a href="/admin/page">Page</a>
+            </li>
+            <li>
+                <details>
+                    <summary>Administrator</summary>
+                    <ul class="p-2">
+                        <li>
+                            <a href="/admin/account">Account</a>
+                        </li>
+                        <li>
+                            <a href="/admin/config">Page Config</a>
+                        </li>
+                    </ul>
+                </details>
+            </li>
+        </ul>
+    </div>
+    <div class="flex-none">
+        <ul class="menu menu-horizontal px-1">
+            @if (PageState.User.IsAuthenticated)
+            {
+                <li>
+                    <details>
+                        <summary>
+                            @PageState.User.Name
+                        </summary>
+                        <ul class="p-2 bg-base-100 rounded-t-none z-10 right-0">
+                            <li>
+                                <a href="/dashboard">Dashboard</a>
+                            </li>
+                            <li>
+                                <a href="/profile/edit">Profile</a>
+                            </li>
+                            <li>
+                                <form action="/logout" method="post" hx-boost="false">
+                                    <AntiforgeryToken/>
+                                    <button type="submit">
+                                        Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </details>
+                </li>
+            }
+            else
+            {
+                <li>
+                    <a href="/login">Login</a>
+                </li>
+                <li>
+                    <a href="/register">Register</a>
+                </li>
+            }
+        </ul>
+    </div>
 </nav>

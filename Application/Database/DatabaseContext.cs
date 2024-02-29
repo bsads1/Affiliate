@@ -18,6 +18,11 @@ public class DatabaseContext : DbContext
     public virtual DbSet<Role> Roles { set; get; }
     public virtual DbSet<UserRole> UserRoles { get; set; }
     public virtual DbSet<TransactionPoint> TransactionPoints { get; set; }
+    public virtual DbSet<ConfigPage> ConfigPages { get; set; }
+    public virtual DbSet<MenuItem> MenuItems { get; set; }
+    public virtual DbSet<PageItem> PageItems { get; set; }
+    public virtual DbSet<Bet> Bets { get; set; }
+    public virtual DbSet<Livestream> Livestreams { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -32,6 +37,7 @@ public class DatabaseContext : DbContext
             entity.Property(e => e.Guid).IsRequired();
             entity.HasIndex(e => e.Guid).IsUnique();
             entity.Property(e => e.Password).IsRequired();
+            entity.Property(e => e.Uid).HasMaxLength(10);
         });
 
         builder.Entity<Role>(entity =>
