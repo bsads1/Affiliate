@@ -1,8 +1,10 @@
 @page "/live/{Slug}"
 @using Microsoft.EntityFrameworkCore
+@using Affiliate.Application.Extensions
 @layout WebLayout
 @inject DatabaseContext DbContext
 @inject NavigationManager NavigationManager
+@inject UserHelper UserHelper
 
 <PageTitle>@PageTitle</PageTitle>
 
@@ -17,27 +19,35 @@
         <div class="mx-auto mb-16 max-w-lg">
             <h1 class="mb-4 font-display text-2xl text-jacarta-700 dark:text-white sm:text-5xl">
                 @Livestream.Title
+                @UserHelper.IsInRole(CustomRoles.Master)
             </h1>
         </div>
         <div class="flex">
             <div class="flex-1">
                 <article>
                     <div class="article-content">
-                        @if (PageState.User.IsAuthenticated)
-                        {
-                            <div class="w-full my-2 flex gap-3 justify-between">
-                                <button onclick="bet(1)" class="inline-block rounded-full bg-white border border-primary py-3 px-8 text-center font-semibold text-primary hover:bg-accent hover:text-white hover:border-transparent transition-all" type="button">Bet @Livestream.Player1Name</button>
-                                <button onclick="bet(0)" class="inline-block rounded-full bg-white border border-primary py-3 px-8 text-center font-semibold text-primary hover:bg-accent hover:text-white hover:border-transparent transition-all" type="button">DRAW</button>
-                                <button onclick="bet(2)" class="inline-block rounded-full bg-white border border-primary py-3 px-8 text-center font-semibold text-primary hover:bg-accent hover:text-white hover:border-transparent transition-all" type="button">Bet @Livestream.Player2Name</button>
-                            </div>
-                        }
                         @if (!string.IsNullOrEmpty(Livestream.LivestreamInput))
                         {
                             <div class="w-full my-2">
-                                @InputStream
+                                <div class="rounded-2lg border border-jacarta-100 bg-white p-8 dark:border-jacarta-600 dark:bg-jacarta-700">
+                                    @InputStream
+                                </div>
                             </div>
                         }
-                        @Content
+                        @if (PageState.User.IsAuthenticated)
+                        {
+                            <div class="w-full">
+                                Ratio: @Livestream.Ratio
+                            </div>
+                            <div class="w-full my-2 flex gap-3 justify-between">
+                                <button data-bs-toggle="modal" data-bs-target="#placeBidModal" onclick="bet(1)" class="inline-block rounded-full bg-white border border-primary py-3 px-8 text-center font-semibold text-primary hover:bg-accent hover:text-white hover:border-transparent transition-all" type="button">Bet @Livestream.Player1Name</button>
+                                <button data-bs-toggle="modal" data-bs-target="#placeBidModal" onclick="bet(0)" class="inline-block rounded-full bg-white border border-primary py-3 px-8 text-center font-semibold text-primary hover:bg-accent hover:text-white hover:border-transparent transition-all" type="button">DRAW</button>
+                                <button data-bs-toggle="modal" data-bs-target="#placeBidModal" onclick="bet(2)" class="inline-block rounded-full bg-white border border-primary py-3 px-8 text-center font-semibold text-primary hover:bg-accent hover:text-white hover:border-transparent transition-all" type="button">Bet @Livestream.Player2Name</button>
+                            </div>
+                        }
+                        <article class="w-full">
+                            @Content
+                        </article>
                     </div>
                 </article>
             </div>
@@ -55,27 +65,123 @@
         </div>
     </div>
 </section>
-<script >
-    function bet(i){
-        const live = @Livestream.Id;
-        const postData = { Live: live, Bet: i };
-        fetch('/api/bet', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(postData)
-        }).then(function (response) {
-            return response.json();
-        }).then(function (data) {
-            console.log(data);
-        })
+
+<div class="modal fade" id="placeBidModal" tabindex="-1" aria-labelledby="placeBidLabel" aria-hidden="true">
+    <div class="modal-dialog max-w-2xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="placeBidLabel">Place a bid</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-6 w-6 fill-jacarta-700 dark:fill-white">
+                        <path fill="none" d="M0 0h24v24H0z"/>
+                        <path d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body p-6">
+                <div class="mb-2 flex items-center justify-between">
+                    <span class="font-display text-sm font-semibold text-jacarta-700 dark:text-white">Points</span>
+                </div>
+                <div class="relative mb-2 flex items-center overflow-hidden rounded-lg border border-jacarta-100 dark:border-jacarta-600">
+                    <div class="flex flex-1 items-center self-stretch border-r border-jacarta-100 bg-jacarta-50 px-2">
+                        <span>
+                            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 1920 1920" xml:space="preserve" class="mr-1 h-5 w-5">
+                                <path fill="#8A92B2" d="M959.8 80.7L420.1 976.3 959.8 731z"></path>
+                                <path fill="#62688F" d="M959.8 731L420.1 976.3l539.7 319.1zm539.8 245.3L959.8 80.7V731z"></path>
+                                <path fill="#454A75" d="M959.8 1295.4l539.8-319.1L959.8 731z"></path>
+                                <path fill="#8A92B2" d="M420.1 1078.7l539.7 760.6v-441.7z"></path>
+                                <path fill="#62688F" d="M959.8 1397.6v441.7l540.1-760.6z"></path>
+                            </svg>
+                        </span>
+                        <span class="font-display text-sm text-jacarta-700">Point</span>
+                    </div>
+
+                    <input type="text" class="h-12 w-full flex-[3] border-0 focus:ring-inset focus:ring-accent" id="amount" name="Amount" placeholder="Amount" value="0"/>
+
+                    <div class="flex flex-1 justify-end self-stretch border-l border-jacarta-100 bg-jacarta-50">
+                        <strong class="self-center px-2 text-sm">@PageState.User.Points.AddDecimalSeparator() P</strong>
+                    </div>
+                    <input type="hidden" id="live" name="Live" value="@Livestream.Id"/>
+                    <input type="hidden" id="bet" name="Bet" value=""/>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="flex items-center justify-center space-x-4">
+                    <button onclick="setbet()" type="button" class="rounded-full bg-accent py-3 px-8 text-center font-semibold text-white shadow-accent-volume transition-all hover:bg-accent-dark">
+                        Bet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="js/jquery-3.7.1.min.js"></script>
+<link rel="stylesheet" href="js/jconfirm/jquery-confirm.min.css">
+<script src="js/jconfirm/jquery-confirm.min.js"></script>
+<style>
+    .jc-bs3-container{
+        width: fit-content!important;
     }
+</style>
+<script >
+    let betTo = -1;
+    function setbet(){
+        let amount = document.getElementById('amount').value;
+        amount = amount.replace(/\./g, "");
+        if (betTo>=0 && amount>0) {
+            const live = @Livestream.Id;
+            const postData = { Live: live, Bet: betTo, Amount: amount };
+            const p1 = '@Livestream.Player1Name';
+            const p2 = '@Livestream.Player2Name';
+            $.confirm({
+                  title: 'Confirm!',
+                  content: 'Bet ' + amount + ' points to ' + (betTo==0 ? 'DRAW' : (betTo==1 ? p1 : p2)) + '?',
+                  closeIcon: true,
+                  buttons: {
+                      confirm: function () {
+                          globalCommons.ShowLoading(document.querySelector('#placeBidModal .modal-content'));
+                          fetch('/api/bet', {
+                              method: 'POST',
+                              headers: {
+                                  'Content-Type': 'application/json',
+                                  'Accept': 'application/json'
+                              },
+                              body: JSON.stringify(postData)
+                          }).then(function (response) {
+                              return response.json();
+                          }).then(function (data) {
+                              console.log(data);
+                          }).finally(()=>{
+                             globalCommons.HideLoading(document.querySelector('#placeBidModal .modal-content')); 
+                          });
+                      }
+                  }
+              });
+        } else {
+            $.alert('Please enter a point!');
+        }
+    }
+    function bet(i){
+        document.getElementById('amount').value = 0;
+        betTo = i;
+    }
+    setTimeout(()=>{
+        globalCommons.InputMask('decimal', {
+            groupSeparator: '.',
+            digits: 0,
+            min:0,
+            max:@PageState.User.Points
+        },document.getElementById('amount'));
+        //prevent post form submit
+    },1000)
 </script>
+
 @code {
     [Parameter] public string? Slug { get; set; } = "";
     [CascadingParameter] public PageState PageState { get; set; } = default!;
+    [CascadingParameter] public HttpContext HttpContext { get; set; } = default!;
     private string? PageTitle { get; set; }
     private MarkupString Content { get; set; }
     private MarkupString InputStream { get; set; }
@@ -88,6 +194,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await Task.Delay(1000);
         if (string.IsNullOrEmpty(Slug)) NavigationManager.NavigateTo("/");
         var livestream = await DbContext.Livestreams
             .AsNoTracking()

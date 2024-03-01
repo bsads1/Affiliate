@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Affiliate.Application.Database;
 using Affiliate.Application.Events.Listeners;
+using Affiliate.Application.Extensions;
 using Affiliate.Application.Services.Auth;
 using Spark.Library.Database;
 using Coravel;
@@ -49,6 +50,7 @@ public static class AppServicesRegistration
         services.AddMailer(config);
         services.AddRazorComponents();
         services.AddDistributedMemoryCache();
+        services.AddHttpContextAccessor();
         services.AddSession(options =>
         {
             options.Cookie.Name = ".Affiliate";
@@ -65,6 +67,7 @@ public static class AppServicesRegistration
     private static IServiceCollection AddCustomServices(this IServiceCollection services)
     {
         // add custom services
+        services.AddScoped<UserHelper>();
         services.AddScoped<TransactionPointService>();
         services.AddScoped<BetService>();
         services.AddScoped<MenuService>();

@@ -227,6 +227,11 @@ namespace Affiliate.Application.Database.Migrations
                         .HasColumnType("text")
                         .HasColumnName("player2name");
 
+                    b.Property<string>("Ratio")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ratio");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasColumnType("text")
@@ -451,7 +456,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 1,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("8233cc17-fa3b-4eda-b1aa-1ad0b2b1ca88"),
+                            Guid = new Guid("bfd46c17-9c5d-4043-ac74-12feac0ccc1a"),
                             Name = "Master"
                         },
                         new
@@ -459,7 +464,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 2,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("df1296d2-8014-4b7d-90aa-4072d0d3d1a9"),
+                            Guid = new Guid("a926efbd-5f14-4ab0-9b39-53adf3a1881d"),
                             Name = "Admin"
                         },
                         new
@@ -467,7 +472,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 3,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("c2325ee1-783d-408f-9ce1-08b2e176d491"),
+                            Guid = new Guid("ccdf79af-0101-4d05-a18e-df0560915480"),
                             Name = "Editor"
                         },
                         new
@@ -475,7 +480,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 4,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("78b467a1-7f91-41eb-a127-857ffb23734b"),
+                            Guid = new Guid("770f9c95-34b2-4fb5-ba7f-d54a28597458"),
                             Name = "User"
                         });
                 });

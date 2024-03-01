@@ -213,7 +213,15 @@
                 globalCommons.InputMask('datetime', {
                     inputFormat: 'dd/MM/yyyy HH:MM'
                 },document.querySelectorAll('.datetime'));
-                globalCommons.InputMask('9{1,3}:9{1,3}',{},document.querySelectorAll('.ratio'));
+                globalCommons.InputMask('9{1,3}:9{1,3}',{
+                    definitions: {
+                        '9': {
+                          validator: "[0-9]",
+                          cardinality: 1,
+                          definitionSymbol: "*"
+                        }
+                      }
+                },document.querySelectorAll('.ratio'));
             },500);
             
             function formatDate(date) {
