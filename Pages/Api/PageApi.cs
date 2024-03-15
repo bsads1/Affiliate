@@ -82,21 +82,10 @@ public class PageApi : IRoute
                         }
                     }
 
-                    if (form.FileBanner is { Length: > 0 })
+                    if (form.FileBanner.Check())
                     {
-                        try
-                        {
-                            var filePath = Path.Combine(uploadPath, form.FileBanner.FileName);
-                            await using var stream = new FileStream(filePath, FileMode.Create);
-                            await form.FileBanner.CopyToAsync(stream);
-                            bannerData.HasData = true;
-                            bannerData.Path = filePath.GetRelativePath();
-                        }
-                        catch (Exception e)
-                        {
-                            bannerData.HasData = false;
-                        }
-                    }
+                        bannerData = await form.FileBanner.SaveAsync();
+                    } 
 
                     form.Slug = form.Name.ToSlug();
                     form.CreatedBy = createBy;

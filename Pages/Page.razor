@@ -18,14 +18,21 @@
     </div>
 </section>
 
+<div style="display:none;"
+     hx-get="/api/topbar-content/page/@PageItem?.Id"
+     hx-trigger="load"
+     hx-target="#topbar_container"
+     hx-swap="innerHTML">
+</div>
 @code {
     [Parameter] public string? Slug { get; set; } = "";
     private string? PageTitle { get; set; }
     private MarkupString Content { get; set; }
-    private PageItem? PageItem { get; set; } = default!;
+    private PageItem? PageItem { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        await Task.Delay(1000);
         if (string.IsNullOrEmpty(Slug)) NavigationManager.NavigateTo("/");
         var pageItem = await DbContext.PageItems
             .AsNoTracking()

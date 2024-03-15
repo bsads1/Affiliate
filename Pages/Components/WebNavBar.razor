@@ -1,7 +1,11 @@
+@using Affiliate.Application.Extensions
+@using System.Security.Cryptography
+
 @code{
     [CascadingParameter] public PageState PageState { get; set; } = default!;
     [CascadingParameter] public HttpContext HttpContext { get; set; } = default!;
     [Inject] MenuService MenuService { get; set; } = default!;
+    [Inject] UserHelper UserHelper { get; set; } = default!;
     [Inject] RolesService RolesService { get; set; } = default!;
     private bool IsShowAdmin { get; set; }
 
@@ -16,6 +20,19 @@
 }
 
 <header class="js-page-header fixed top-0 z-20 w-full backdrop-blur transition-colors">
+    @if (UserHelper.IsInRole(CustomRoles.Master) || UserHelper.IsInRole(CustomRoles.Admin) || UserHelper.IsInRole(CustomRoles.Editor))
+    {
+        <div>
+            <style>
+                me { background: #000; }
+                me .wrapper{ padding:10px 0; }
+                me a { color: #fff; }
+                me a,me label { text-decoration: none; cursor: pointer; transition: color 0.2s ease-in-out; }
+                me a:hover,me label:hover { color: #3b82f6; }
+            </style>
+            <div class="container" id="topbar_container"></div>
+        </div>
+    }
     <div class="flex items-center px-6 py-6 xl:px-24">
         <a href="/" class="shrink-0">
             <img src="@PageState.Config?.Logo" class="max-h-7 dark:hidden" alt="@PageState.Config?.PageName"/>

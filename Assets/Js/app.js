@@ -1,4 +1,4 @@
-import Inputmask from "inputmask";
+import Inputmask from "inputmask"; 
 
 document.addEventListener('DOMContentLoaded', () => {
     //get all forms
@@ -98,6 +98,12 @@ window.globalCommons = (function () {
         ShowLoading: AddLoadingToElement,
         HideLoading: RemoveLoadingFromElement,
         InputMask: InputMask,
-        ToSlug: ToSlug
+        ToSlug: ToSlug,
+        Alert: function () {
+            $.alert({
+                title: 'Alert!',
+                content: 'Simple alert!',
+            });
+        },
     };
 })();

@@ -13,6 +13,7 @@
     <div class="card-body">
         <div id="alert"></div>
         <form id="LivestreamForm" data-enhance name="PageForm" enctype="multipart/form-data">
+            <input type="hidden" name="Id" value="@Form.Id" />
             <div class="space-y-4">
                 <div class="grid grid-cols-3 gap-4">
                     <div class="col-span-2 space-y-2">
@@ -138,7 +139,7 @@
                     </div>
                 </div>
                 <div class="text-end">
-                    <button class="btn btn-neutral" type="button" onclick="submitForm()">Create</button>
+                    <button class="btn btn-neutral" type="button" onclick="submitForm()">Update</button>
                 </div>
             </div>
             <AntiforgeryToken/>
@@ -265,6 +266,7 @@
 
     private List<ToolbarItem> ToolbarItems { get; set; } =
     [
+        new ToolbarItem { Href = "/admin/live/update/", Text = "Update Livestream result", ClassList = "btn btn-primary text-base-100" },
         new ToolbarItem { Href = "/admin/live/create", Text = "Add Livestream", ClassList = "btn btn-primary text-base-100" },
         new ToolbarItem { Href = "/admin/live", Text = "Back to Livestream List", ClassList = "btn btn-neutral text-base-100" }
     ];
@@ -280,6 +282,7 @@
         else
         {
             Form = livestream.Adapt<LivePostFormDto>();
+            ToolbarItems[0].Href = "/admin/live/update/" + Id;
         }
 
         PageTitle = $"Edit Live " + Form.Title;

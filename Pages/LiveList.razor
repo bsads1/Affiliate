@@ -25,9 +25,13 @@
                             <div class="rounded-b-[1.25rem] border border-t-0 border-jacarta-100 bg-white p-[10%] dark:border-jacarta-600 dark:bg-jacarta-700">
                                 <h2 class="mb-4 font-display text-xl text-jacarta-700 hover:text-accent dark:text-white dark:hover:text-accent">
                                     <a href="/live/@livestream.Slug">@livestream.Title</a>
-                                    @if (IsLive(livestream))
+                                    @if (IsLive(livestream) || livestream.IsEnd == false)
                                     {
                                         <span class="rounded bg-red py-1 px-2 ml-2 text-xxs font-bold uppercase leading-none text-white">Live</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="rounded bg-accent py-1 px-2 ml-2 text-xxs font-bold uppercase leading-none text-white">Ended</span>
                                     }
                                 </h2>
                                 <div class="flex flex-wrap items-center space-x-2 text-sm text-jacarta-400">

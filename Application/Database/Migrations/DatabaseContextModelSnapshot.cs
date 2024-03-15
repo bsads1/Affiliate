@@ -456,7 +456,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 1,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("bfd46c17-9c5d-4043-ac74-12feac0ccc1a"),
+                            Guid = new Guid("dcd0b491-84a4-4148-8c2c-944fa1dd47b1"),
                             Name = "Master"
                         },
                         new
@@ -464,7 +464,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 2,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("a926efbd-5f14-4ab0-9b39-53adf3a1881d"),
+                            Guid = new Guid("2a916b50-4354-4bc7-ba43-e262ae6c6c2a"),
                             Name = "Admin"
                         },
                         new
@@ -472,7 +472,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 3,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("ccdf79af-0101-4d05-a18e-df0560915480"),
+                            Guid = new Guid("93d9c878-c817-467d-aee9-79cb772c4c2b"),
                             Name = "Editor"
                         },
                         new
@@ -480,7 +480,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 4,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("770f9c95-34b2-4fb5-ba7f-d54a28597458"),
+                            Guid = new Guid("c47aa676-06a7-412b-a5d4-9ad42a3abde0"),
                             Name = "User"
                         });
                 });
@@ -655,6 +655,95 @@ namespace Affiliate.Application.Database.Migrations
                         .HasDatabaseName("ix_user_roles_user_id");
 
                     b.ToTable("user_roles", (string)null);
+                });
+
+            modelBuilder.Entity("PageSeo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Canonical")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("canonical");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("description");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guid");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("image");
+
+                    b.Property<string>("Keywords")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("keywords");
+
+                    b.Property<string>("PageId")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("page_id");
+
+                    b.Property<string>("PageRoute")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("page_route");
+
+                    b.Property<string>("PageType")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("page_type");
+
+                    b.Property<string>("Robots")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("robots");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_page_seos");
+
+                    b.ToTable("page_seos", (string)null);
                 });
 
             modelBuilder.Entity("Affiliate.Application.Models.UserRole", b =>

@@ -48,7 +48,7 @@ public static class AppServicesRegistration
         services.AddEventServices();
         services.AddEvents();
         services.AddMailer(config);
-        services.AddRazorComponents();
+        services.AddRazorComponents().AddInteractiveServerComponents();
         services.AddDistributedMemoryCache();
         services.AddHttpContextAccessor();
         services.AddSession(options =>
@@ -77,6 +77,7 @@ public static class AppServicesRegistration
         services.AddScoped<UsersService>();
         services.AddScoped<RolesService>();
         services.AddScoped<LivestreamService>();
+        services.AddScoped<PageSeoService>();
         services.AddScoped<IAuthValidator, SparkAuthValidator>();
         services.AddScoped<AuthService>();
         services.AddScoped<IValidator<Register.RegisterForm>, Register.RegisterFormValidator>();

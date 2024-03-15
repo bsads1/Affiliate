@@ -1,0 +1,51 @@
+@layout EmptyLayout
+
+<meta name="description" content="@Seo.Description">
+<meta name="keywords" content="@Seo.Keywords">
+<meta name="robots" content="@Seo.Robots">
+<link rel="canonical" href="@Seo.Canonical">
+
+<meta property="og:title" content="@Seo.Title">
+<meta property="og:description" content="@Seo.Description">
+<meta property="og:image" content="@Seo.Image">
+<meta property="og:url" content="@Seo.Canonical">
+<meta property="og:type" content="website">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="@Seo.Title">
+<meta name="twitter:description" content="@Seo.Description">
+<meta name="twitter:image" content="@Seo.Image">
+
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "NewsArticle",
+  "mainEntityOfPage": {
+    "@@type": "WebPage",
+    "@@id": "@Seo.Canonical"
+  },
+  "headline": "@Seo.Title",
+  "image": [
+    "@Seo.Image"
+   ],
+  "author": {
+    "@@type": "Organization",
+    "name": ""
+  },
+  "publisher": {
+    "@@type": "Organization",
+    "name": "",
+    "logo": {
+      "@@type": "ImageObject",
+      "url": "@PageState.Config?.Logo"
+    }
+  },
+  "description": "@Seo.Description"
+}
+</script>
+
+
+@code {
+    [Parameter] public PageSeo Seo { get; set; }
+    [CascadingParameter] public PageState PageState { get; set; }
+}

@@ -1,3 +1,5 @@
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Spark.Library.Config;
@@ -18,6 +20,11 @@ builder.Services.AddAppServices(builder.Configuration);
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration).CreateLogger();
 builder.Host.UseSerilog();
+builder.Services.AddWebEncoders(
+    options => options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All)
+);
+//unicode range unicode
+
 
 var app = builder.Build();
 
@@ -45,7 +52,7 @@ app.UseAuthorization();
 app.UseStaticFiles();
 app.UseSession();
 app.UseAntiforgery();
-app.MapRazorComponents<PageRoutes>();
+app.MapRazorComponents<PageRoutes>().AddInteractiveServerRenderMode();
 app.MapMinimalApis<Program>();
 
 app.Services.SetupScheduledJobs();

@@ -128,7 +128,7 @@ public class LivestreamApi : IRoute
                         var result = await livestreamService.CreateAsync(form);
                         return Results.Ok(new
                         {
-                            Ok = result
+                            ok = result != null, result?.Id
                         });
                     }
                 })
@@ -149,7 +149,7 @@ public class LivestreamApi : IRoute
                     else
                     {
                         (bool HasData, string Path) imageData = (false, "");
-                        
+
                         if (form.File is { Length: > 0 })
                         {
                             try
@@ -216,10 +216,28 @@ public class LivestreamApi : IRoute
                         var result = await livestreamService.UpdateAsync(form);
                         return Results.Ok(new
                         {
-                            Ok = result
+                            Ok = result != null, result?.Id
                         });
                     }
                 })
             .RequireAuthorization(CustomPolicies.MasterAdminAccess);
+
+        app.MapPost("/api/live/update-winner/{live:int}",
+                async (int live, [FromBody] PostForm form, HttpContext context,
+                    LivestreamService livestreamService) =>
+                {
+                    var createBy = Guid.Parse(context.User.Claims.FirstOrDefault(p => p.Type == "Guid")?.Value ?? "0");
+                    var result = await livestreamService.UpdateWinnerAsync(live, form.winner, createBy);
+                    return Results.Ok(new
+                    {
+                        Ok = result != null, result?.Winner
+                    });
+                })
+            .RequireAuthorization(CustomPolicies.MasterAdminAccess);
+    }
+
+    private class PostForm
+    {
+        public int winner { get; set; }
     }
 }

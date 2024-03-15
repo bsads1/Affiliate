@@ -10,8 +10,7 @@ public class DatabaseContext : DbContext
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        base.OnConfiguring(optionsBuilder);
+    { 
     }
 
     public virtual DbSet<User> Users { set; get; }
@@ -23,6 +22,7 @@ public class DatabaseContext : DbContext
     public virtual DbSet<PageItem> PageItems { get; set; }
     public virtual DbSet<Bet> Bets { get; set; }
     public virtual DbSet<Livestream> Livestreams { get; set; }
+    public virtual DbSet<PageSeo> PageSeos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

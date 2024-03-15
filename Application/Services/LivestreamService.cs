@@ -16,14 +16,14 @@ public class LivestreamService(IDbContextFactory<DatabaseContext> factory, Datab
         await using var db = await factory.CreateDbContextAsync();
         try
         {
-            var user = await db.Livestreams.FindAsync(id);
-            if (user != null)
+            var livestream = await db.Livestreams.FindAsync(id);
+            if (livestream != null)
             {
-                user.IsDelete = true;
-                user.UpdatedAt = DateTime.UtcNow;
-                user.UpdatedBy = updateBy;
+                livestream.IsDelete = true;
+                livestream.UpdatedAt = DateTime.UtcNow;
+                livestream.UpdatedBy = updateBy;
                 await db.SaveChangesAsync();
-                return user;
+                return livestream;
             }
 
             return null;
@@ -41,10 +41,11 @@ public class LivestreamService(IDbContextFactory<DatabaseContext> factory, Datab
         await using var db = await factory.CreateDbContextAsync();
         try
         {
-            var page = form.Adapt<Livestream>();
-            await db.Livestreams.AddAsync(page);
+            var livestream = form.Adapt<Livestream>();
+            livestream.Guid = Guid.NewGuid();
+            await db.Livestreams.AddAsync(livestream);
             await db.SaveChangesAsync();
-            return page;
+            return livestream;
         }
         catch (Exception e)
         {
@@ -63,6 +64,10 @@ public class LivestreamService(IDbContextFactory<DatabaseContext> factory, Datab
             var livestream = await db.Livestreams.FindAsync(form.Id);
             if (livestream != null)
             {
+                if (livestream.Guid == Guid.Empty)
+                {
+                    livestream.Guid = Guid.NewGuid();
+                }
                 livestream.UpdatedAt = form.UpdatedAt;
                 livestream.UpdatedBy = form.UpdatedBy;
                 livestream.Title = form.Title;
@@ -100,5 +105,58 @@ public class LivestreamService(IDbContextFactory<DatabaseContext> factory, Datab
     {
         var livestream = await context.Livestreams.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
         return livestream;
+    }
+
+    public async Task<List<BetDto>> GetLiveBets(Guid liveGuid)
+    {
+        var result = new List<BetDto>();
+        try
+        {
+            var betsDto = await (from bet in context.Bets.AsNoTracking() 
+                    join u in context.Users.AsNoTracking() on bet.UserGuid equals u.Guid
+                    where bet.LivestreamGuid == liveGuid
+                    orderby bet.BetDate descending
+                    select new BetDto { 
+                        Id = bet.Id, 
+                        UserName = u.Name, 
+                        BetDate = bet.BetDate, 
+                        BetOnPlayer = bet.BetOnPlayer,
+                        PointsBet = bet.PointsBet, 
+                        CreatedAt = bet.CreatedAt, 
+                        UpdatedAt = bet.UpdatedAt 
+                    }).ToListAsync();
+            return betsDto;
+        }
+        catch (Exception e)
+        {
+            var exception = e.InnerException?.Message ?? e.Message; 
+            Log.Error("Error getting live bets: {Exception}", exception);
+        }
+
+        return result;
+    }
+
+    public async Task<Livestream?> UpdateWinnerAsync(int liveId, int winner, Guid createBy)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        try
+        {
+            var livestream = await db.Livestreams.FindAsync(liveId);
+            if (livestream != null)
+            {
+                livestream.Winner = winner;
+                livestream.IsEnd = true;
+                livestream.UpdatedAt = DateTime.UtcNow;
+                livestream.UpdatedBy = createBy;
+                await db.SaveChangesAsync();
+                return livestream;
+            }
+        }
+        catch (Exception e)
+        {
+            var exception = e.InnerException?.Message ?? e.Message;
+            Log.Error("Error updating winner: {Exception}", exception);
+        }
+        return null;
     }
 }
