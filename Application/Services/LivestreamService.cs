@@ -139,6 +139,7 @@ public class LivestreamService(IDbContextFactory<DatabaseContext> factory, Datab
     public async Task<Livestream?> UpdateWinnerAsync(int liveId, int winner, Guid createBy)
     {
         await using var db = await factory.CreateDbContextAsync();
+        await using var transaction = await db.Database.BeginTransactionAsync();
         try
         {
             var livestream = await db.Livestreams.FindAsync(liveId);
@@ -149,11 +150,59 @@ public class LivestreamService(IDbContextFactory<DatabaseContext> factory, Datab
                 livestream.UpdatedAt = DateTime.UtcNow;
                 livestream.UpdatedBy = createBy;
                 await db.SaveChangesAsync();
+                var ratio = 0;
+                if (!string.IsNullOrEmpty(livestream.Ratio))
+                {
+                    var split = livestream.Ratio.Split(':');
+                    if (split.Length == 2)
+                    {
+                        if (livestream.Winner == 1)
+                        {
+                            ratio = int.Parse(split[1]) / int.Parse(split[0]);
+                        } else if (livestream.Winner == 2)
+                        {
+                            ratio = int.Parse(split[0]) / int.Parse(split[1]);
+                        }
+                    }
+                }
+                var allBets = await db.Bets.AsNoTracking().Where(p => p.LivestreamGuid == livestream.Guid).ToListAsync();
+                var winningBets = allBets.Where(p => p.BetOnPlayer == winner).ToList();
+                if (winningBets.Count > 0)
+                {
+                    var userInBets = (from bet in winningBets 
+                                      join u in db.Users.AsNoTracking() on bet.UserGuid equals u.Guid
+                                      select u).Distinct().ToList();
+                    foreach (var user in userInBets)
+                    {
+                        var points = winningBets.Sum(p => p.PointsBet) * ratio;
+                        user.Points += points;
+                        db.Users.Update(user);
+                        var transactionPoint = new TransactionPoint
+                        {
+                            UserId = user.Guid,
+                            TransactionTimestamp = DateTime.UtcNow,
+                            PointsChanged = points,
+                            TransactionType = TransactionType.Redemption.ToString(),
+                            TransactionDescription = "Winning bets on " + livestream.Title,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow,
+                            Guid = Guid.NewGuid(),
+                            CreatedBy = createBy,
+                            UpdatedBy = createBy,
+                            AccountBalance = user.Points,
+                            AmountChanged = 0
+                        };
+                        db.TransactionPoints.Add(transactionPoint);
+                    }
+                    await db.SaveChangesAsync();
+                }
+                await transaction.CommitAsync();
                 return livestream;
             }
         }
         catch (Exception e)
         {
+            await transaction.RollbackAsync();
             var exception = e.InnerException?.Message ?? e.Message;
             Log.Error("Error updating winner: {Exception}", exception);
         }

@@ -123,7 +123,7 @@
         <h1 class="text-center text-3xl font-bold">
             Create your account
         </h1>
-        <EditForm Model="Form" OnValidSubmit="@RegisterUser" FormName="RegisterForm" method="post" Enhance class="grid grid-cols-1 gap-y-6 p-6 bg-white mx-auto w-full max-w-md shadow-sm border rounded-md">
+        <EditForm Model="Form" OnValidSubmit="@RegisterUser" FormName="RegisterForm" method="post" Enhance class="grid grid-cols-1 gap-y-6 p-6 mx-auto w-full max-w-md shadow-sm border rounded-md">
             <FluentValidationValidator/>
             @if (!String.IsNullOrEmpty(_userExistsMessage))
             {
