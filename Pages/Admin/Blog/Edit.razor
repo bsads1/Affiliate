@@ -1,0 +1,224 @@
+@page "/admin/blog/edit/{Id:int}"
+@using Affiliate.Application.Dtos
+@using System.Text.Json
+@inject DatabaseContext DbContext
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Policy = CustomPolicies.MasterAdminAccess)]
+
+<PageTitle>@PageTitle</PageTitle>
+
+<style>
+    .select2-results{
+        background: #fff;
+    }
+</style>
+
+<Toolbar PageTitle="@PageTitle" ToolbarItems="@ToolbarItems"></Toolbar>
+
+<div class="card card-compact w-100 bg-base-100 shadow-xl">
+    <div class="card-body">
+        <div id="alert"></div>
+        <form id="PageForm" data-enhance name="PageForm" enctype="multipart/form-data">
+            <input type="hidden" name="Id" value="@Form.Id">
+            <div class="space-y-4">
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-2 space-y-2">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">Title</label>
+                            <input id="name" name="Name" value="@Form.Name" placeholder="Title" class="input input-bordered w-full"/>
+                        </div>
+                        <div>
+                            <label for="slug" class="block text-sm font-medium text-gray-700">Slug</label>
+                            <input id="slug" name="Slug" value="@Form.Slug" placeholder="Slug" class="input input-bordered w-full"/>
+                        </div>
+                        <div>
+                            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                            <textarea id="description" name="Description" class="input input-bordered w-full h-32">@Form.Description</textarea>
+                        </div>
+                        <div>
+                            <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+                            <textarea id="content" name="Content" class="input input-bordered w-full h-32 hidden">@Form.Content</textarea>
+                            <div id="content-editor" style="height: 500px;"></div>
+                        </div>
+                        <div>
+                            <label for="tags" class="block text-sm font-medium text-gray-700">Tags</label>
+                            <select id="tags" name="Tags" placeholder="Tags" class="input input-bordered w-full" multiple="multiple">
+                                @if (Form.Tags != null && Form.Tags.Any())
+                                {
+                                    foreach (var tag in Form.Tags)
+                                    {
+                                        <option value="@tag" selected="selected">@tag</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-span-1 space-y-2">
+                        <div>
+                            <div class="form-control">
+                                <label class="label cursor-pointer">
+                                    <span class="label-text">Publish</span>
+                                    @if (Form.IsShow == true)
+                                    {
+                                        <input type="checkbox" id="publish" name="Publish" class="checkbox checkbox-primary text-base-100" checked/>
+                                    }
+                                    else
+                                    {
+                                        <input type="checkbox" id="publish" name="Publish" class="checkbox checkbox-primary text-base-100"/>
+                                    }
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="file" class="block text-sm font-medium text-gray-700">Thumbnail</label>
+                            <div>
+                                <div class="w-full">
+                                    <input type="file" accept="image/*" id="file" name="File" class="file-input file-input-bordered file-input-primary w-full"/>
+                                </div>
+                                <div class="w-full">
+                                    @if (!string.IsNullOrEmpty(Form?.Image))
+                                    {
+                                        <img src="@Form.Image" class="w-fit"/>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="banner" class="block text-sm font-medium text-gray-700">Banner</label>
+                            <div>
+                                <div class="w-full">
+                                    <input type="file" accept="image/*" id="banner" name="FileBanner" class="file-input file-input-bordered file-input-primary w-full"/>
+                                </div>
+                                <div class="w-full">
+                                    @if (!string.IsNullOrEmpty(Form?.Banner))
+                                    {
+                                        <img src="@Form.Banner" class="w-fit"/>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <button class="btn btn-neutral" type="button" onclick="submitForm()">Update</button>
+                </div>
+            </div>
+            <AntiforgeryToken/>
+        </form>
+    </div>
+</div>
+
+<SectionContent SectionName="section-bottom">
+    <link href="/js/select2/select2.min.css" rel="stylesheet"/>
+    <link href="/js/quill/quill.snow.css" rel="stylesheet">
+    <script src="/js/jquery-3.7.1.min.js"></script> 
+    <script src="/js/select2/select2.min.js"></script>
+    <script src="/js/quill/quill.js"></script>
+    
+    <script >
+        const quill = new Quill('#content-editor', {
+           theme: 'snow',
+           modules: {
+             toolbar: [
+                  ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+                  ['blockquote', 'code-block'],
+                  ['link', 'image', 'video', 'formula'],
+      
+                  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                  [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+                  [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+      
+                  [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+                  [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      
+                  [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+                  [{ 'align': [] }],
+      
+                  ['clean']                                         // remove formatting button
+              ]
+           },
+        });        
+        async function submitForm() {
+            const form = document.getElementById('PageForm');
+            const quillContent = document.querySelector('#content-editor .ql-editor').innerHTML;
+            document.getElementById('content').value = quillContent;
+            const formData = new FormData(form);
+            formData.set('IsShow', document.getElementById('publish').checked);
+            try {
+                const response = await fetch('/api/blog', {
+                    method: 'PUT',
+                    body: formData
+                });
+                const data = await response.json().then(data => data);
+                if (data.ok) {
+                    globalCommons.CreateAlert('Form submitted successfully', 'success',document.querySelector('#alert'));
+                    setTimeout(() => {
+                        window.location.reload();
+                    },3000)
+                } else {
+                    globalCommons.CreateAlert('Form submitted failed', 'error',document.querySelector('#alert'));
+                }
+            } catch (error) {
+                console.error('An error occurred during form submission:', error);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const textareaContent = document.getElementById('content').value;
+            quill.root.innerHTML = textareaContent;
+            $('#tags').select2({
+                selectionCssClass: 'input input-bordered w-full h-fit',
+                dropdownCssClass: 'input input-bordered w-full',
+                tags: true,
+                tokenSeparators: [','],
+                allowClear: true
+            });
+            document.getElementById('name').addEventListener('input', function() {
+                document.getElementById('slug').value = globalCommons.ToSlug(this.value);
+            })
+
+        })
+    </script>
+</SectionContent>
+
+@code {
+    [Parameter] public int Id { get; set; } = 1;
+    [SupplyParameterFromForm] private PagePostFormDto? Form { get; set; }
+    private string PageTitle { get; set; }
+
+    private List<ToolbarItem> ToolbarItems { get; set; } =
+    [
+        new ToolbarItem { Href = "/admin/blog/create", Text = "Add Blog", ClassList = "btn btn-primary text-base-100" },
+        new ToolbarItem { Href = "/admin/blog", Text = "Back to Blog List", ClassList = "btn btn-neutral text-base-100" }
+    ];
+
+    protected override void OnInitialized()
+    {
+        Form ??= new();
+        var pageItem = DbContext.PageItems.Find(Id);
+        if (pageItem == null || pageItem.IsDelete)
+        {
+            NavigationManager.NavigateTo("/admin/blog");
+        }
+        else
+        {
+            var tags = !string.IsNullOrEmpty(pageItem.Tags) ? JsonSerializer.Deserialize<string[]>(pageItem.Tags) : Array.Empty<string>();
+            Form.Id ??= pageItem.Id;
+            Form.Name ??= pageItem.Name;
+            Form.Slug ??= pageItem.Slug;
+            Form.Content ??= pageItem.Content;
+            Form.Description ??= pageItem.Description;
+            Form.Image ??= pageItem.Image;
+            Form.Banner ??= pageItem.Banner;
+            Form.Tags ??= tags;
+            Form.IsShow ??= pageItem.IsShow;
+        }
+
+        PageTitle = $"Edit Blog {Form.Name}";
+    }
+
+    private async Task Submit()
+    {
+    }
+
+}

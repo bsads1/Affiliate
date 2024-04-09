@@ -9,4 +9,6 @@ public class Bet : ExtendModel
     public int BetOnPlayer { get; set; }
     public DateTime BetDate { get; set; }
     public long PointsBet { get; set; }
+    public double RatioBet { get; set; }
+    public double RatioWon { get; set; }
 }

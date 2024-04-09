@@ -4,7 +4,6 @@ namespace Affiliate.Application.Jobs;
 
 public class ExampleJob : IInvocable
 {
-
     public ExampleJob()
     {
     }

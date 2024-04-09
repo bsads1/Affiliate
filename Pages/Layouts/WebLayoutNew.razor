@@ -1,0 +1,552 @@
+﻿@using Affiliate.Pages.Auth
+@inherits LayoutComponentBase
+@using Microsoft.Extensions.Hosting;
+@using global::Vite.AspNetCore
+@inject IWebHostEnvironment Env
+@inject IViteManifest Manifest
+@inject IViteDevServerStatus DevServerStatus
+
+@code{
+    [CascadingParameter] public PageState PageState { get; set; } = default!;
+    [CascadingParameter] public HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm(FormName = "LoginForm")]
+    private LoginModel LoginForm { get; set; } = new();
+
+    [SupplyParameterFromForm(FormName = "RegisterForm")]
+    private RegisterModel RegisterForm { get; set; } = new();
+
+    private string _loginFailedMessage = "";
+    private string _userExistsMessage = "";
+    [Inject] public IConfiguration Configuration { get; set; } = default!;
+    [Inject] public UsersService UsersService { get; set; } = default!;
+    [Inject] public AuthService AuthService { get; set; } = default!;
+    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+
+    private sealed class RegisterModel
+    {
+        public string Name { get; set; } = String.Empty;
+        public string Email { get; set; } = String.Empty;
+        public string Password { get; set; } = String.Empty;
+        public string ConfirmPassword { get; set; } = String.Empty;
+    }
+
+    private sealed class LoginModel
+    {
+        public string Email { get; set; } = String.Empty;
+        public string Password { get; set; } = String.Empty;
+        public bool RememberMe { get; set; }
+    }
+
+    private async Task LoginUser()
+    {
+        var user = await UsersService.FindUserByCredsAsync(LoginForm.Email, UsersService.GetSha256Hash(LoginForm.Password));
+        if (user == null)
+        {
+            _loginFailedMessage = "Login Failed: Your email or password was incorrect";
+            return;
+        }
+
+        var cookieExpirationDays = Configuration.GetValue("Spark:Auth:CookieExpirationDays", 5);
+        var cookieClaims = await AuthService.CreateCookieClaims(user);
+
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            cookieClaims,
+            new AuthenticationProperties
+            {
+                IsPersistent = LoginForm.RememberMe,
+                IssuedUtc = DateTimeOffset.UtcNow,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(cookieExpirationDays)
+            });
+
+        NavigationManager.NavigateTo("/");
+    }
+
+    private class RegisterFormValidator : AbstractValidator<RegisterModel>
+    {
+        private readonly IConfiguration _config;
+
+        public RegisterFormValidator(IConfiguration config)
+        {
+            _config = config;
+            var minPasswordLength = _config.GetValue<int>("Spark:Auth:Password:MinimumLength", 8);
+            var maxPasswordLength = _config.GetValue<int>("Spark:Auth:Password:MaximumLength", 32);
+            var requireDigit = _config.GetValue<bool>("Spark:Auth:Password:RequireDigit", false);
+            var requireUpper = _config.GetValue<bool>("Spark:Auth:Password:RequireUppercase", false);
+            var requireNonAlphanumeric = _config.GetValue<bool>("Spark:Auth:Password:RequireNonAlphanumeric", false);
+
+            RuleFor(p => p.Name)
+                .NotEmpty().WithMessage("Name is required");
+
+            RuleFor(p => p.Email)
+                .NotEmpty().WithMessage("Email address is required")
+                .EmailAddress().WithMessage("Please enter a valid email address");
+
+            RuleFor(p => p.Password)
+                .NotEmpty().WithMessage("Password is required")
+                .MinimumLength(minPasswordLength).WithMessage($"Password length must be at least {minPasswordLength}.")
+                .MaximumLength(maxPasswordLength).WithMessage($"Password length must not exceed {maxPasswordLength}.");
+
+            if (requireDigit)
+            {
+                RuleFor(p => p.Password)
+                    .Matches(@"[0-9]+").WithMessage("Password must contain at least one number.");
+            }
+
+            if (requireUpper)
+            {
+                RuleFor(p => p.Password)
+                    .Matches(@"[A-Z]").WithMessage("Password must contain at least one uppercase letter.");
+            }
+
+            if (requireNonAlphanumeric)
+            {
+                RuleFor(p => p.Password)
+                    .Matches(@"[^a-zA-Z0-9]").WithMessage("Password must contain at least one non-alphanumeric character.");
+            }
+
+            RuleFor(p => p.ConfirmPassword)
+                .NotEmpty().WithMessage("Confirm password is required")
+                .Equal(model => model.Password).WithMessage("The Password and Confirm Password do not match.");
+        }
+    }
+
+    private async Task RegisterUser()
+    {
+        var existingUser = await UsersService.FindUserByEmailAsync(RegisterForm.Email);
+
+        if (existingUser != null)
+        {
+            _userExistsMessage = "Email already in use by another account.";
+            return;
+        }
+
+        if (RegisterForm.Password != RegisterForm.ConfirmPassword)
+        {
+            return;
+        }
+
+        var userForm = new User()
+        {
+            Name = RegisterForm.Name,
+            Email = RegisterForm.Email,
+            Password = UsersService.GetSha256Hash(RegisterForm.Password),
+            CreatedAt = DateTime.Now.ToUniversalTime()
+        };
+
+        var newUser = await UsersService.CreateUserAsync(userForm);
+
+        var user = await UsersService.FindUserByCredsAsync(newUser.Email, newUser.Password);
+
+        var cookieExpirationDays = Configuration.GetValue("Spark:Auth:CookieExpirationDays", 5);
+        var cookieClaims = await AuthService.CreateCookieClaims(user);
+
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            cookieClaims,
+            new AuthenticationProperties
+            {
+                IsPersistent = true,
+                IssuedUtc = DateTimeOffset.UtcNow,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(cookieExpirationDays)
+            });
+
+        NavigationManager.NavigateTo("/");
+    }
+
+    private class LoginFormValidator : AbstractValidator<LoginModel>
+    {
+        public LoginFormValidator()
+        {
+            RuleFor(p => p.Email)
+                .EmailAddress().WithMessage("Please enter a valid email address");
+
+            RuleFor(p => p.Password)
+                .NotEmpty().WithMessage("Password is required");
+        }
+    }
+
+}
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <base href="/"/>
+    <link rel="icon" type="image/png" href="@PageState.Config?.Favicon"/>
+
+    <meta name="author" content="@PageState.Config?.Author"/>
+    <meta name="description" content="@PageState.Config?.Description"/>
+    <meta name="keywords" content="@PageState.Config?.Keywords"/>
+    @{
+        MarkupString additionalMeta = new MarkupString(PageState.Config?.AdditionalMeta ?? "");
+    }
+    @additionalMeta
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/jquery-ui.css">
+    <link rel="stylesheet" href="/assets/css/nice-select.css">
+    <link rel="stylesheet" href="/assets/css/magnific-popup.css">
+    <link rel="stylesheet" href="/assets/css/slick.css">
+    <link rel="stylesheet" href="/assets/css/ara-font.css">
+    <link rel="stylesheet" href="/assets/css/animate.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/js/jconfirm/jquery-confirm.min.css">
+    <style>
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }  
+    .cmn-btn{
+    background-color: transparent!important;
+    }
+        
+        iframe{
+            width: 100%;
+            height: 100%;
+        } 
+      .checkbox-wrapper-24 .checkbox {
+        display: table-cell;
+        width: 100%;
+        height: 100%;
+        vertical-align: middle;
+        text-align: center;
+      }
+    
+      .checkbox-wrapper-24 label {
+        display: inline-block;
+        color: #fff;
+        cursor: pointer;
+        position: relative;
+      }
+      .checkbox-wrapper-24 label span {
+        display: inline-block;
+        position: relative;
+        background-color: transparent;
+        width: 25px;
+        height: 25px;
+        transform-origin: center;
+        border: 2px solid #fff;
+        border-radius: 50%;
+        vertical-align: middle;
+        margin-right: 10px;
+        transition: background-color 150ms 200ms, transform 350ms cubic-bezier(0.78, -1.22, 0.17, 1.89);
+      }
+      .checkbox-wrapper-24 label span:before {
+        content: "";
+        width: 0px;
+        height: 2px;
+        border-radius: 2px;
+        background: #fff;
+        position: absolute;
+        transform: rotate(45deg);
+        top: 11px;
+        left: 7px;
+        transition: width 50ms ease 50ms;
+        transform-origin: 0% 0%;
+      }
+      .checkbox-wrapper-24 label span:after {
+        content: "";
+        width: 0;
+        height: 2px;
+        border-radius: 2px;
+        background: #fff;
+        position: absolute;
+        transform: rotate(305deg);
+        top: 15px;
+        left: 8px;
+        transition: width 50ms ease;
+        transform-origin: 0% 0%;
+      }
+      .checkbox-wrapper-24 label:hover span:before {
+        width: 5px;
+        transition: width 100ms ease;
+      }
+      .checkbox-wrapper-24 label:hover span:after {
+        width: 10px;
+        transition: width 150ms ease 100ms;
+      }
+    
+      .checkbox-wrapper-24 input[type=radio] {
+        display: none;
+      }
+      .checkbox-wrapper-24 input[type=radio]:checked + label span {
+        background-color: #333;
+        transform: scale(1.25);
+      }
+      .checkbox-wrapper-24 input[type=radio]:checked + label span:after {
+        width: 10px;
+        background: #fff;
+        transition: width 150ms ease 100ms;
+      }
+      .checkbox-wrapper-24 input[type=radio]:checked + label span:before {
+        width: 5px;
+        background: #fff;
+        transition: width 150ms ease 100ms;
+      }
+      .checkbox-wrapper-24 input[type=radio]:checked + label:hover span {
+        background-color: #333;
+        transform: scale(1.25);
+      }
+      .checkbox-wrapper-24 input[type=radio]:checked + label:hover span:after {
+        width: 10px;
+        background: #fff;
+        transition: width 150ms ease 100ms;
+      }
+      .checkbox-wrapper-24 input[type=radio]:checked + label:hover span:before {
+        width: 5px;
+        background: #fff;
+        transition: width 150ms ease 100ms;
+      }
+      @@keyframes bounce {
+        0% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-20px);
+        }
+        100% {
+          transform: translateY(0);
+        }
+      }
+      
+      .bounce {
+        animation: bounce 4s infinite;
+      }
+    </style>
+    <script src="/assets/js/jquery.min.js"></script>
+    <script src="/js/scope-inline.js"></script>
+
+    @if (Env.IsDevelopment())
+    {
+        <script type="module" src="@DevServerStatus.ServerUrlWithBasePath/@@vite/client"></script>
+        <script type="module" src="@DevServerStatus.ServerUrlWithBasePath/Assets/Js/app.js"></script>
+    }
+    else
+    {
+        <script type="module" src="/build/assets/app.js"></script>
+    }
+    <HeadOutlet/>
+
+</head>
+
+<body>
+<a href="javascript:void(0)" class="scrollToTop">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5"/>
+    </svg>
+</a>
+<div class="preloader" id="preloader"></div>
+<header class="header-section">
+    <div class="overlay">
+        <div class="container">
+            <div class="row d-flex header-area">
+                <nav class="navbar navbar-expand-lg navbar-light justify-content-between">
+                    <a class="navbar-brand" href="/">
+                        <img src="@PageState.Config?.Logo" class="fav d-none d-lg-block d-xl-none" style="max-width: 100px;" alt="fav">
+                        <img src="@PageState.Config?.Logo" class="logo d-block d-lg-none d-xl-block" style="max-width: 100px;" alt="logo">
+                    </a>
+                    <div class="navbar-collapse justify-content-between flex-grow-0">
+                        @if (PageState.User.IsAuthenticated)
+                        {
+                            <div class="right-area header-action d-flex align-items-center max-un gap-3">
+                                <button href="javascript:void(0)" class="text-white">TK: @PageState.User.Name <span id="user_points_header">(@PageState.User.Points đ)</span></button>
+                                <a class="cmn-btn" href="/dashboard">Nạp điểm</a>
+                                <form action="/logout" method="post">
+                                    <AntiforgeryToken/>
+                                    <button class="btn btn-secondary bg-secondary text-white" type="submit" id="logout_btn">
+                                        Đăng xuất
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="right-area header-action d-flex align-items-center max-un">
+                                <button type="button" class="login" data-bs-toggle="modal" data-bs-target="#loginMod">
+                                    Sign In
+                                </button>
+                                <button type="button" class="cmn-btn reg" data-bs-toggle="modal" data-bs-target="#loginMod">
+                                    Sign Up
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+<div class="log-reg">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="modal fade" id="loginMod">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header justify-content-center">
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close">
+                                </button>
+                            </div>
+                            <ul class="nav log-reg-btn d-none justify-content-around">
+                                <li class="bottom-area" role="presentation">
+                                    <button class="nav-link" id="regArea-tab" data-bs-toggle="tab"
+                                            data-bs-target="#regArea" type="button" role="tab" aria-controls="regArea"
+                                            aria-selected="false">
+                                        ĐĂNG KÝ
+                                    </button>
+                                </li>
+                                <li class="bottom-area" role="presentation">
+                                    <button class="nav-link active" id="loginArea-tab" data-bs-toggle="tab"
+                                            data-bs-target="#loginArea" type="button" role="tab"
+                                            aria-controls="loginArea" aria-selected="true">
+                                        ĐĂNG NHẬP
+                                    </button>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="loginArea" role="tabpanel"
+                                     aria-labelledby="loginArea-tab">
+                                    <div class="login-reg-content">
+                                        <div class="modal-body">
+                                            <div class="form-area">
+                                                <EditForm Enhance FormName="LoginForm" OnValidSubmit="LoginUser" Model="LoginForm" method="post">
+                                                    <div class="section-text text-center">
+                                                        <h3 class="title">ĐĂNG NHẬP</h3>
+                                                        <p>Chưa có tài khoản? <a href="javascript:void(0)" class="reg-btn">Đăng ký</a></p>
+                                                    </div>
+                                                    @if (!String.IsNullOrEmpty(_loginFailedMessage))
+                                                    {
+                                                        <div class="mb-1 validation-message">
+                                                            <span>@_loginFailedMessage</span>
+                                                        </div>
+                                                    }
+                                                    <div class="input-area d-flex align-items-center">
+                                                        <img src="/images/icon/email-icon.png" alt="icon">
+                                                        <InputText @bind-Value="LoginForm.Email" type="email"></InputText>
+                                                        <ValidationMessage For="() => LoginForm.Email"/>
+                                                    </div>
+                                                    <div class="input-area d-flex align-items-center">
+                                                        <img src="/images/icon/security.png" alt="icon">
+                                                        <InputText @bind-Value="LoginForm.Password" type="password"></InputText>
+                                                        <ValidationMessage For="() => LoginForm.Password"/>
+                                                    </div>
+                                                    <div class="checkbox-item d-flex justify-content-between">
+                                                        <label class="checkbox-single d-flex align-items-center">
+                                                            <span class="content-area">
+                                                                <span class="checkbox-area d-flex">
+                                                                    <InputCheckbox @bind-Value="LoginForm.RememberMe"/>
+                                                                    <span class="checkmark"></span>
+                                                                </span>
+                                                                <span class="item-title d-flex align-items-center">
+                                                                    Ghi nhớ đăng nhập
+                                                                </span>
+                                                            </span>
+                                                        </label>
+                                                    </div>
+                                                    <div class="btn-area text-center">
+                                                        <button type="submit" href="javascript:void(0)" class="cmn-btn mt-4 gap-2">
+                                                            Đăng nhập
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                                                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </EditForm>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="regArea" role="tabpanel" aria-labelledby="regArea-tab">
+                                    <div class="login-reg-content regMode">
+                                        <div class="modal-body">
+                                            <div class="form-area">
+                                                <EditForm Enhance Model="RegisterForm" OnValidSubmit="@RegisterUser" FormName="RegisterForm" method="post">
+                                                    @if (!String.IsNullOrEmpty(_userExistsMessage))
+                                                    {
+                                                        <div class="mb-1 validation-message">
+                                                            <span>@_userExistsMessage</span>
+                                                        </div>
+                                                    }
+                                                    <div class="section-text text-center">
+                                                        <h5 class="sub-title">ĐĂNG KÝ</h5>
+                                                        <p>Đã có tài khoản? <a href="javascript:void(0)" class="log-btn">Đăng nhập</a></p>
+                                                    </div>
+                                                    <div class="input-area d-flex align-items-center">
+                                                        <img src="/images/icon/email-icon.png" alt="icon">
+                                                        <InputText @bind-Value="RegisterForm.Name" placeholder="Name"></InputText>
+                                                        <ValidationMessage For="() => RegisterForm.Name"/>
+                                                    </div>
+                                                    <div class="input-area d-flex align-items-center">
+                                                        <img src="/images/icon/email-icon.png" alt="icon">
+                                                        <InputText @bind-Value="RegisterForm.Email" placeholder="Email"></InputText>
+                                                        <ValidationMessage For="() => RegisterForm.Email"/>
+                                                    </div>
+                                                    <div class="input-area d-flex align-items-center">
+                                                        <img src="/images/icon/security.png" alt="icon">
+                                                        <InputText @bind-Value="RegisterForm.Password" type="password"/>
+                                                        <ValidationMessage For="() => RegisterForm.Password"/>
+                                                    </div>
+                                                    <div class="input-area d-flex align-items-center">
+                                                        <img src="/images/icon/security.png" alt="icon">
+                                                        <InputText @bind-Value="RegisterForm.ConfirmPassword" type="password"/>
+                                                        <ValidationMessage For="() => RegisterForm.ConfirmPassword"/>
+                                                    </div>
+                                                    <div class="sidebar-single-item">
+                                                        <div class="btn-area text-center">
+                                                            <button type="submit" class="cmn-btn mt-4 gap-2">
+                                                                Đăng ký
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </EditForm>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<main>
+    <section>
+        @Body
+    </section>
+</main>
+<script src="/assets/js/jquery-ui.js"></script>
+<script src="/assets/js/bootstrap.min.js"></script>
+<script src="/assets/js/fontawesome.js"></script>
+<script src="/assets/js/slick.js"></script>
+<script src="/assets/js/jquery.nice-select.min.js"></script>
+<script src="/assets/js/counter.js"></script>
+<script src="/assets/js/jquery.downCount.js"></script>
+<script src="/assets/js/waypoint.min.js"></script>
+<script src="/assets/js/jquery.magnific-popup.min.js"></script>
+<script src="/assets/js/wow.min.js"></script>
+<script src="/js/jconfirm/jquery-confirm.min.js"></script>
+<script src="/js/signalr.min.js"></script>
+<script src="/assets/js/plugin.js"></script>
+<script src="/assets/js/main.js"></script>
+<SectionOutlet SectionName="section-bottom"/>
+</body>
+</html>

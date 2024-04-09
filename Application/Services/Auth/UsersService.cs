@@ -28,7 +28,7 @@ public class UsersService(DatabaseContext db)
         var addedUser = await db.Users.AddAsync(user);
         await db.SaveChangesAsync();
 
-        var role = db.Roles.FirstOrDefault(p=>p.Name == CustomRoles.User);
+        var role = db.Roles.FirstOrDefault(p => p.Name == CustomRoles.User);
         if (role == null)
         {
             role = new Role
@@ -38,7 +38,7 @@ public class UsersService(DatabaseContext db)
             db.Roles.Add(role);
             await db.SaveChangesAsync();
         }
-        
+
         await db.UserRoles.AddAsync(new UserRole
         {
             RoleId = role.Guid, User = user
@@ -50,7 +50,7 @@ public class UsersService(DatabaseContext db)
     public async Task<List<User>> GetAllUsersAsync()
     {
         return await db.Users
-                .ToListAsync();
+            .ToListAsync();
     }
 
     public string GetSha256Hash(string input)

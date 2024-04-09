@@ -9,7 +9,7 @@ public class PaginatedList<T> : List<T>
     public int TotalPages { get; private set; }
     public int TotalItemCount { get; private set; }
     public int PageRange { get; set; } = 3;
-    
+
     public int CalculateDescendingIndex()
     {
         int totalItemCount = TotalPages * PageSize;
@@ -23,8 +23,10 @@ public class PaginatedList<T> : List<T>
             return TotalItemCount - remainingItems;
         }
     }
-    
-    public PaginatedList() { }
+
+    public PaginatedList()
+    {
+    }
 
     private PaginatedList(List<T> items, int count, int pageIndex, int pageSize)
     {
@@ -44,6 +46,7 @@ public class PaginatedList<T> : List<T>
         var items = await source.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
         return new PaginatedList<T>(items, count, pageIndex, pageSize);
     }
+
     public static async Task<PaginatedList<T>> CreateAsync(List<T> source, int pageIndex, int pageSize)
     {
         var count = source.Count;

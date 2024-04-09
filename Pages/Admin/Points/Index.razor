@@ -185,9 +185,9 @@ const dialogAdd = (function () {
     function confirmAdd() {
         const formData = new FormData();
         formData.append('Id', usr);
-        formData.append('Points', document.querySelector('#add_point_modal input[name="point"]').value);
+        formData.append('Points', document.querySelector('#add_point_modal input[name="point"]').value.replace(/\./g, ''));
         formData.append('Description', document.querySelector('#add_point_modal textarea[name="description"]').value);
-        formData.append('Money', document.querySelector('#add_point_modal input[name="money"]').value);
+        formData.append('Money', document.querySelector('#add_point_modal input[name="money"]').value.replace(/\./g, ''));
         formData.append('DateTime', document.querySelector('#add_point_modal input[name="datetime"]').value);
        
         const options = {

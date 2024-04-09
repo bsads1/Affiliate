@@ -3,7 +3,6 @@ using Coravel.Events.Interfaces;
 
 namespace Affiliate.Application.Events;
 
-
 public class UserCreated : IEvent
 {
     public User User { get; set; }

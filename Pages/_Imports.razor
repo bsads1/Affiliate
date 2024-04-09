@@ -24,8 +24,11 @@
 @using Affiliate.Application.Database
 @using Affiliate.Application.Jobs
 @using Affiliate.Application.Events
+@using Affiliate.Application.Services.Hubs
 @using FluentValidation
 @using Serilog
 @using Blazored.FluentValidation
 @using Coravel.Events.Interfaces
+@using Microsoft.AspNetCore.SignalR
 @inject IAuthorizationService AuthorizationService
+@inject IHubContext<BetHub> BetHubContext

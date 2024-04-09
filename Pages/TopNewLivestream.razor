@@ -1,7 +1,6 @@
-@page "/TopNewLivestream"
 @using Microsoft.EntityFrameworkCore
-@inject DatabaseContext DbContext
-<div class="grid grid-cols-1 gap-[1.875rem] sm:grid-cols-2 md:grid-cols-3">
+@inject IDbContextFactory<DatabaseContext> Factory
+<div class="grid grid-cols-1 gap-[1.875rem] sm:grid-cols-4 md:grid-cols-3">
     @if (Livestreams.Any())
     {
         foreach (var livestream in Livestreams)
@@ -39,7 +38,7 @@
 </div>
 
 @code {
-     private string? PageTitle { get; set; }
+    private string? PageTitle { get; set; }
     private List<Livestream> Livestreams { get; set; } = [];
 
     private bool IsLive(Livestream livestream)
@@ -47,14 +46,15 @@
         return livestream.StartTime < DateTime.Now && livestream.CloseTime > DateTime.Now;
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        var query = DbContext.Livestreams
+        var dbContext = Factory.CreateDbContext();
+        var query = dbContext.Livestreams
             .AsNoTracking()
             .Where(p => p.IsDelete == false && p.IsShow /* && p.IsEnd == false*/)
             .OrderBy(p => p.CreatedAt)
             .Take(9);
-        Livestreams =  await query.ToListAsync();
+        Livestreams = query.ToList();
     }
 
 }

@@ -1,5 +1,7 @@
 ﻿@page "/"
-@layout WebLayout
+@using Affiliate.Application.Extensions
+@layout WebLayoutNew
+@inject UserHelper UserHelper
 
 @code {
     [CascadingParameter] public HttpContext Context { get; set; }
@@ -13,17 +15,29 @@
 }
 
 <PageTitle>@PageState.Config?.PageName</PageTitle>
-
-<div class="container h-full">
-    <div class="mx-auto max-w-2xl py-16 text-center">
-        <h1 class="mb-8 font-display text-4xl font-medium text-jacarta-700 dark:text-white">About Xhibiter</h1>
-        <p class="text-lg leading-normal dark:text-jacarta-300">
-            Every digital creation available through MakersPlace is an authentic and truly unique digital creation,
-            signed and issued by the creator — made possible by blockchain technology.
-        </p>
+<section class="banner-section index">
+    <div class="overlay">
+        <div class="banner-content">
+            <div class="container wow fadeInUp">
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-xl-6 col-lg-6 col-md-8">
+                        <div class="main-content">
+                            <div class="top-area section-text">
+                                @if (PageState.User.IsAuthenticated)
+                                {
+                                    <a class="single-box shadow-2xl bounce" href="/game" style="width: 300px; height: 375px; display: inline-block;"> 
+                                        <img src="images/game.png" alt="Game" style="width: 100%; height: 100%;object-fit: cover;border-radius: 10px;">
+                                    </a>
+                                }
+                                else
+                                {
+                                    <h1 class="title">TRƯỜNG GÀ THOMO</h1>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="mx-auto max-w-2xl py-16 text-center">
-        <h1 class="mb-8 font-display text-4xl font-medium text-jacarta-700 dark:text-white">Live</h1>
-        <div hx-get="/TopNewLivestream" hx-swap="outerHTML"></div>
-    </div>
-</div>
+</section>

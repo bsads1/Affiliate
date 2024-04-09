@@ -1,0 +1,178 @@
+﻿@page "/"
+@layout WebLayout
+
+@code {
+    [CascadingParameter] public HttpContext Context { get; set; }
+    [CascadingParameter] public PageState PageState { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        //Log.Information("This is the homepage.");
+    }
+
+}
+
+<PageTitle>@PageState.Config?.PageName</PageTitle>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+<script>
+
+      document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+              initialView: 'dayGridMonth',
+              initialDate: '2024-03-20',
+              headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+              },
+              events: [
+                {
+                  title: 'Đá gà singapore',
+                  start: '2024-03-01',
+                  end: '2024-03-02'
+                },
+                {
+                  title: 'Đá gà dao',
+                  start: '2024-03-07',
+                  end: '2024-03-07'
+                },
+                {
+                  title: 'Offline thành viên',
+                  start: '2024-03-22',
+                  end: '2024-03-22'
+                },
+                {
+                  title: 'Đá gà hàng tháng',
+                  start: '2024-03-12T10:30:00',
+                  end: '2024-03-12T12:30:00'
+                },
+                {
+                  title: 'Chia sẻ về chương trình',
+                  start: '2024-03-12T13:30:00',
+                  end: '2024-03-12T15:30:00'
+                },
+                {
+                  title: 'Lunch',
+                  start: '2024-02-12T12:00:00'
+                },
+                {
+                  title: 'Đá gà dao đỏ',
+                  start: '2024-02-12T14:30:00'
+                },
+                {
+                  title: 'Sự kiện giao lưu',
+                  start: '2024-02-13T07:00:00'
+                },
+              ]
+        });
+        calendar.render();
+      });
+
+    </script>
+
+<div class="h-full">
+    <div class="container">
+        <div class="text-center">
+            <img src="https://niko88.com/wp-content/uploads/2024/02/banner-slide-niko88-19-2-min.jpg" class="max-w-full" alt="">
+        </div>
+    </div>
+    <div class="container">
+        <div class="mx-auto py-6 text-center">
+            <h1 class="mb-8 font-display text-4xl font-medium text-jacarta-700 dark:text-white">Live</h1>
+            <TopNewLivestream></TopNewLivestream>
+        </div>
+    </div>
+    <div class="container">
+        <div class="mx-auto py-6 text-center">
+            <h1 class="mb-8 font-display text-4xl font-medium text-jacarta-700 dark:text-white">LỊCH THI ĐẤU</h1>
+            
+            <div id='calendar'></div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="py-6">
+            <h2 class="mb-24 text-center font-display text-3xl font-medium text-jacarta-700 dark:text-white">
+                Chào mừng đến với @PageState.Config?.PageName
+            </h2>
+            <div class="grid gap-7 md:grid-cols-4">
+                <div class="mb-12 rounded-2.5xl border border-jacarta-100 bg-white p-8 pt-0 text-center transition-shadow hover:shadow-xl dark:border-jacarta-600 dark:bg-jacarta-700">
+                    <div class="mb-9 -mt-8 inline-flex h-[5.5rem] w-[5.5rem] items-center justify-center rounded-full border border-jacarta-100 bg-white dark:border-jacarta-600 dark:bg-jacarta-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-12 w-12 fill-accent">
+                            <path fill="none" d="M0 0h24v24H0z"></path>
+                            <path d="M12 11a5 5 0 0 1 5 5v6H7v-6a5 5 0 0 1 5-5zm-6.712 3.006a6.983 6.983 0 0 0-.28 1.65L5 16v6H2v-4.5a3.5 3.5 0 0 1 3.119-3.48l.17-.014zm13.424 0A3.501 3.501 0 0 1 22 17.5V22h-3v-6c0-.693-.1-1.362-.288-1.994zM5.5 8a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zm13 0a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM12 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"></path>
+                        </svg>
+                    </div>
+
+                    <h3 class="mb-4 font-display text-lg text-jacarta-700 dark:text-white">Đăng ký</h3>
+                    <p class="dark:text-jacarta-300">
+                        Cùng tham gia với hàng ngàn thành viên
+                    </p>
+                </div>
+                <div class="mb-12 rounded-2.5xl border border-jacarta-100 bg-white p-8 pt-0 text-center transition-shadow hover:shadow-xl dark:border-jacarta-600 dark:bg-jacarta-700">
+                    <div class="mb-9 -mt-8 inline-flex h-[5.5rem] w-[5.5rem] items-center justify-center rounded-full border border-jacarta-100 bg-white dark:border-jacarta-600 dark:bg-jacarta-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-12 w-12 fill-accent">
+                            <path fill="none" d="M0 0h24v24H0z"></path>
+                            <path d="M13 9h8L11 24v-9H4l9-15v9zm-2 2V7.22L7.532 13H13v4.394L17.263 11H11z"></path>
+                        </svg>
+                    </div>
+
+                    <h3 class="mb-4 font-display text-lg text-jacarta-700 dark:text-white">Xác thực</h3>
+                    <p class="dark:text-jacarta-300">
+                        Nhanh chóng, dễ dàng và tiện lợi
+                    </p>
+                </div>
+                <div class="mb-12 rounded-2.5xl border border-jacarta-100 bg-white p-8 pt-0 text-center transition-shadow hover:shadow-xl dark:border-jacarta-600 dark:bg-jacarta-700">
+                    <div class="mb-9 -mt-8 inline-flex h-[5.5rem] w-[5.5rem] items-center justify-center rounded-full border border-jacarta-100 bg-white dark:border-jacarta-600 dark:bg-jacarta-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-12 w-12 fill-accent">
+                            <path fill="none" d="M0 0h24v24H0z"></path>
+                            <path d="M22 6h-7a6 6 0 1 0 0 12h7v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v2zm-7 2h8v8h-8a4 4 0 1 1 0-8zm0 3v2h3v-2h-3z"></path>
+                        </svg>
+                    </div>
+
+                    <h3 class="mb-4 font-display text-lg text-jacarta-700 dark:text-white">Ví chính</h3>
+                    <p class="dark:text-jacarta-300">
+                        Bảo mật an toàn
+                    </p>
+                </div>
+                <div class="mb-12 rounded-2.5xl border border-jacarta-100 bg-white p-8 pt-0 text-center transition-shadow hover:shadow-xl dark:border-jacarta-600 dark:bg-jacarta-700">
+                    <div class="mb-9 -mt-8 inline-flex h-[5.5rem] w-[5.5rem] items-center justify-center rounded-full border border-jacarta-100 bg-white dark:border-jacarta-600 dark:bg-jacarta-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-12 w-12 fill-accent">
+                            <path fill="none" d="M0 0h24v24H0z"></path>
+                            <path d="M17 16h2V4H9v2h8v10zm0 2v3c0 .552-.45 1-1.007 1H4.007A1.001 1.001 0 0 1 3 21l.003-14c0-.552.45-1 1.007-1H7V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3zM7 16v2h2v1h2v-1h.5a2.5 2.5 0 1 0 0-5h-3a.5.5 0 1 1 0-1H13v-2h-2V9H9v1h-.5a2.5 2.5 0 1 0 0 5h3a.5.5 0 1 1 0 1H7z"></path>
+                        </svg>
+                    </div>
+
+                    <h3 class="mb-4 font-display text-lg text-jacarta-700 dark:text-white">Rút tiền</h3>
+                    <p class="dark:text-jacarta-300">
+                        Rút tiền nhanh chóng
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="mx-auto py-6 text-center">
+            <h1 class="mb-8 font-display text-4xl font-medium text-jacarta-700 dark:text-white">Blogs</h1>
+            <TopNewBlogs></TopNewBlogs>
+            <div class="mt-8">
+                <a href="/blogs" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-jacarta-700 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700">
+                    Xem thêm
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="bg-accent py-6">
+        <div class="container">
+            <div class="mx-auto text-center">
+                <h2 class="mx-auto mb-8 max-w-sm font-display text-3xl text-white">
+                    Tham gia ngay hôm nay
+                </h2>
+                <p class="mb-10 text-lg leading-normal text-white">
+                    @PageState.Config?.PageName được chính phủ cấp phép hoạt động hợp pháp hơn 10 năm qua. Từ khi ra mắt đến nay, chúng tôi luôn khẳng định được vị thế của mình nhờ chất lượng dịch vụ giúp bạn hoàn toàn yên tâm khi trải nghiệm tại đây.
+                </p>
+                <a href="/register" class="inline-block rounded-full bg-white py-3 px-8 text-center font-semibold text-accent transition-all hover:bg-accent-dark hover:text-white">ĐĂNG KÝ NGAY</a>
+            </div>
+        </div>
+    </div>
+</div>

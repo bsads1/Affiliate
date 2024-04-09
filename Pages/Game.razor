@@ -1,0 +1,558 @@
+@page "/game"
+@using Affiliate.Application.Extensions
+@attribute [Authorize]
+@layout WebLayoutNew
+@inject LivestreamService LivestreamService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Livestream </PageTitle>
+
+<script src="/js/signalr.min.js"></script>
+@if (Livestream != null)
+{
+    <section class="banner-section inner-banner tournaments">
+        <style>
+            me .table-bet{  
+                background: rgba(32, 16, 72, 1);
+            }
+            me table td, me table th{ color: #fff;padding: 10px 15px; }
+            me .table-responsive{
+                max-height: 60vh;
+            }
+            me table {
+                width: 100%;
+                border-collapse: collapse;
+              }
+            
+           me thead th {
+                background: rgba(32, 16, 72, 1);
+                position: -webkit-sticky;
+                position: sticky;
+                top: 0;
+            }
+        </style>
+        <div class="overlay">
+            <div class="banner-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="row">
+                                <div class="col">
+                                    <h5>Số điểm: <span id="user_points"></span> đ</h5>
+                                </div>
+                                <div class="col text-end">
+                                    <button class="cmn-btn" data-bs-toggle="modal" data-bs-target="#betHistoryModal">Lịch sử</button>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Livestream.LivestreamInput))
+                            {
+                                <div class="w-100 mt-3">
+                                    <div class="rounded-lg p-3 mb-3 bg-light">
+                                        @InputStream
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="col-6">
+                            <div id="bet-dashboard" class="table-responsive table-bet">
+                                <table id="bet-history" class="table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">Kèo (Xanh-Đỏ)</th>
+                                        <th scope="col">Điểm cân bàn</th>
+                                        <th scope="col" class="text-end">Đã cược</th>
+                                        <th scope="col"></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <div class="btn-area mt-4 text-center">
+                                @if (Livestream.Id > 0)
+                                {
+                                    <button id="btn_set_bet" class="cmn-btn" data-bs-toggle="modal" data-bs-target="#betModal">Đặt kèo</button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="log-reg">
+        <style>
+            me .gap-2{
+                gap: 0.5rem;
+            }
+            me .w-200px{
+                width: 200px;
+            }
+            me .w-100px{
+                width: 100px;
+            }
+            me .mx-auto{ margin: auto; }
+            me .modal-content{
+                background-color: #140836!important;
+            }
+            me .checkbox-wrapper-24{
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #fff;
+            }
+           me .text {
+            flex: 1 0 120px;
+           } 
+            me .table-bet-history{  
+                background: rgba(32, 16, 72, 1);
+            }
+            me table td, me table th{ color: #fff;padding: 10px 15px; }
+            me .table-responsive{
+                max-height: 60vh;
+            }
+            me table {
+                width: 100%;
+                border-collapse: collapse;
+              }
+            
+           me thead th {
+                background: rgba(32, 16, 72, 1);
+                position: -webkit-sticky;
+                position: sticky;
+                top: 0;
+            }
+            me .max-w-80{
+                max-width: 80vw;
+            }
+        </style>
+        <div class="modal fade" id="betModal">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header justify-content-center">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close">
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="frmBet" class="w-100">
+                            <div class="mx-auto">
+                                <div class="d-flex gap-3 justify-content-center w-100 p-2">
+                                    <div>
+                                        <div class="checkbox-wrapper-24">
+                                            <input type="radio" id="player1" name="check" value="1"/>
+                                            <label for="player1">
+                                                <span></span>Gà xanh
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="checkbox-wrapper-24">
+                                            <input type="radio" id="player2" name="check" value="2"/>
+                                            <label for="player2">
+                                                <span></span>Gà đỏ
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-col gap-2 my-3 align-items-center">
+                                    <div class="text-white">Đặt</div>
+                                    <select class="ratio-select flex-grow-1" id="ratioBet" name="ratioBet">
+                                        <option value="1">1</option>
+                                        <option value="1.5">1.5</option>
+                                        <option value="2">2</option>
+                                        <option value="2.5">2.5</option>
+                                        <option value="3">3</option>
+                                        <option value="3.5">3.5</option>
+                                        <option value="4">4</option>
+                                        <option value="4.5">4.5</option>
+                                        <option value="5">5</option>
+                                        <option value="5.5">5.5</option>
+                                        <option value="6">6</option>
+                                        <option value="6.5">6.5</option>
+                                        <option value="7">7</option>
+                                        <option value="7.5">7.5</option>
+                                        <option value="8">8</option>
+                                        <option value="8.5">8.5</option>
+                                        <option value="9">9</option>
+                                        <option value="9.5">9.5</option>
+                                        <option value="10">10</option>
+                                    </select>
+                                    <div class="text-white">Ăn</div>
+                                    <select class="ratio-select flex-grow-1" id="ratioWon" name="ratioWon">
+                                        <option value="1">1</option>
+                                        <option value="1.5">1.5</option>
+                                        <option value="2">2</option>
+                                        <option value="2.5">2.5</option>
+                                        <option value="3">3</option>
+                                        <option value="3.5">3.5</option>
+                                        <option value="4">4</option>
+                                        <option value="4.5">4.5</option>
+                                        <option value="5">5</option>
+                                        <option value="5.5">5.5</option>
+                                        <option value="6">6</option>
+                                        <option value="6.5">6.5</option>
+                                        <option value="7">7</option>
+                                        <option value="7.5">7.5</option>
+                                        <option value="8">8</option>
+                                        <option value="8.5">8.5</option>
+                                        <option value="9">9</option>
+                                        <option value="9.5">9.5</option>
+                                        <option value="10">10</option>
+                                    </select>
+                                </div>
+                                <div class="d-flex flex-col gap-2 my-3 align-items-center">
+                                    <div class="text-white text-nowrap text">Số điểm đặt</div>
+                                    <input type="text" id="pointbet" name="PointBet" placeholder="Amount" value="0"/>
+                                </div>
+                                <div class="d-flex flex-col gap-2 my-3 align-items-center">
+                                    <div class="text-white text-nowrap text">Số điểm thắng</div>
+                                    <input type="text" readonly id="pointget" name="PointGet" placeholder="Amount" value="0"/>
+                                </div>
+                            </div>
+                            <input type="hidden" id="live" name="Live" value="@Livestream.Id"/>
+                            <input type="hidden" id="bet" name="Bet" value=""/>
+                            <div class="btn-area mt-4 text-center">
+                                <button class="cmn-btn" id="bet-btn" type="button">Tạo kèo</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="betHistoryModal">
+            <div class="modal-dialog modal-dialog-centered max-w-80">
+                <div class="modal-content">
+                    <div class="modal-header justify-content-center">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close">
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table id="bet-user-history" class="table table-bet-history">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Phiên</th>
+                                    <th scope="col">Xanh/Đỏ</th>
+                                    <th scope="col">Tổng khớp</th>
+                                    <th scope="col">Thắng</th>
+                                    <th scope="col">Cửa đặt</th>
+                                    <th scope="col">Kết quả</th>
+                                </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script defer>
+    let page = 1;
+    let points = @PageState.User.Points;
+    let betJoins = [];
+    
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/betHub")
+        .build();
+    
+    function loadMoreData() {
+        fetch('/api/bet-history?liveId=' + @Livestream.Id + '&page=' + page)
+           .then(response => response.json())
+           .then(data => {
+                if (data.ok) {
+                    const betHistory = data.data;
+                    const betTable = document.getElementById('bet-history');
+                    const tbody = betTable.getElementsByTagName('tbody')[0];
+                    //prepend row to tbody
+                    for (let i = 0; i < betHistory.length; i++) {
+                        const bet = betHistory[i];
+                        const row = document.createElement('tr');
+                        const cell1 = document.createElement('td');
+                        const cell2 = document.createElement('td');
+                        const cell3 = document.createElement('td');
+                        const cell4 = document.createElement('td');
+                        cell1.textContent = bet.betOnPlayer == 1 ? 'Gà xanh' : 'Gà đỏ';
+                        cell2.textContent = 'Đặt ' +bet.ratioBet + ' ăn ' + bet.ratioWon;
+                        cell3.textContent = bet.pointsBet + 'đ';
+                        cell3.classList.add('text-end');
+                        cell4.innerHTML = `<button type="button" class="cmn-btn btn-sm btn-thamgia" data-id="${bet.guid}" data-bet="${bet.pointsWin}">Tham gia</button>`;
+                        row.appendChild(cell1);
+                        row.appendChild(cell2);
+                        row.appendChild(cell3);
+                        row.appendChild(cell4);
+                        tbody.insertBefore(row, tbody.firstChild);
+                    }
+                    page++;
+                }
+            })
+           .catch(error => console.error(error));
+    }
+    document.getElementById('bet-dashboard').addEventListener('scroll', function() {
+      if (this.scrollTop + this.clientHeight >= this.scrollHeight) {
+          page++;
+          loadMoreData();
+      }
+    });
+    connection.on("ReceiveDataUpdate", function (data) {
+        page = 1;
+        const betTable = document.getElementById('bet-history');
+        const tbody = betTable.getElementsByTagName('tbody')[0];
+        const row = document.createElement('tr');
+        const cell1 = document.createElement('td');
+        const cell2 = document.createElement('td');
+        const cell3 = document.createElement('td');
+        cell3.classList.add('text-end');
+        cell1.textContent = data.betOnPlayer == 1 ? 'Gà xanh' : 'Gà đỏ';
+        cell2.textContent = 'Đặt ' +data.ratioBet + ' ăn ' + data.ratioWon;
+        cell3.textContent = data.pointsBet + 'đ';
+        row.appendChild(cell1);
+        row.appendChild(cell2);
+        row.appendChild(cell3);
+        tbody.insertBefore(row, tbody.firstChild);
+        points -= data.pointsBet;
+        document.getElementById('user_points').textContent = points;
+        const pointHolder = document.getElementById('user_points_header');
+        if (pointHolder) pointHolder.textContent = '(' + points + ' đ)';
+        //loadMoreData();
+    });
+    connection.on("NewLive", function (data) {
+       if (data) window.location.reload();
+    });
+    connection.on("EndLive", function (data) {
+       if (data>0 && data == @Livestream.Id)
+          { 
+              document.querySelector('#btn_set_bet').remove();
+              $.alert({ title: 'Thông báo!', content: 'Kết thúc phiên! Chờ admin duyệt kết quả!', });
+      }
+    });
+    connection.on("UpdatePoint", function (data) { 
+        document.getElementById('user_points').textContent = data;
+        const pointHolder = document.getElementById('user_points_header');
+        if (pointHolder) pointHolder.textContent = '(' + data + ' đ)'; 
+    });
+    async function start() {
+        try {
+            if (connection.state == signalR.HubConnectionState.Disconnected)
+            await connection.start();
+            //console.log("Connected.");
+        } catch (err) {
+            console.log(err);
+        }
+        setTimeout(start, 3000);
+    };
+
+    start();
+    
+    document.getElementById('bet-btn').addEventListener('click', postBet);
+    $('.ratio-select, #pointbet').on('change', function () {
+        const ratioBet = document.getElementById('ratioBet').value;
+        const ratioWon = document.getElementById('ratioWon').value;
+        const pointBet = document.getElementById('pointbet').value;
+        const ratio = (parseFloat(ratioWon) / parseFloat(ratioBet)).toFixed(2);
+        let point = pointBet.replace(/\./g, "");
+        point = parseFloat(point);
+        const pointWin = (point * ratio).toFixed(0);
+        document.getElementById('pointget').value = pointWin;
+    });
+    function postBet(){ 
+        const formBet = document.getElementById('frmBet');
+        const bet = formBet.elements['check'].value;
+        const ratioBet = formBet.elements['ratioBet'].value;
+        const ratioWon = formBet.elements['ratioWon'].value;
+        const pointBet = formBet.elements['PointBet'].value;
+        const pointget = formBet.elements['PointGet'].value;
+        const live = formBet.elements['Live'].value;
+        if (!(bet == 1 || bet == 2)) {
+            $.alert({ title: 'Cảnh báo!', content: 'Chưa chọn gà!', });
+            return;
+        }
+        if (pointBet<=0){
+            $.alert({
+                title: 'Cảnh báo!',
+                content: 'Số điểm đặt không hợp lệ!',
+            });
+            return;
+        }
+        const betData = { Live: live, Bet: bet, 
+        RatioBet: ratioBet, RatioWon: ratioWon,
+            PointBet: pointBet.replace(/\./g, ""), PointGet: pointget.replace(/\./g, "") };
+        let player  = '';
+        if (bet==1) player = 'Gà xanh';
+        else if (bet==2) player = 'Gà đỏ';
+        $.confirm({
+            title: 'Xác nhận!',
+            content: `Đặt ${pointBet} điểm cho ${player} ?`,
+            closeIcon: true,
+            buttons: {
+                confirm: {
+                    text: 'Đồng ý',
+                    btnClass: 'btn-primary',
+                    action: function () {
+                        globalCommons.ShowLoading(document.querySelector('#betModal .modal-content'));
+                        connection.invoke("SendDataUpdate", JSON.stringify(betData))
+                            .then((result) => {
+                                //hide modal
+                                $('#betModal').modal('hide');
+                                globalCommons.HideLoading(document.querySelector('#betModal .modal-content'));                           
+                            })
+                            .catch((error) => {
+                                globalCommons.HideLoading(document.querySelector('#betModal .modal-content'));
+                                console.error("Error:", error);
+                            });
+                    }
+                }
+            }
+        });
+    }
+    $(document).ready(function () {
+        document.getElementById('user_points').textContent = points;
+        $('#betModal').on('hidden.bs.modal', function () {
+            //reset form
+            document.getElementById('frmBet').reset();
+            $('#ratioBet').val(1)
+            $('#ratioBet').niceSelect('update')
+            $('#ratioWon').val(1)
+            $('#ratioWon').niceSelect('update')
+            
+            globalCommons.InputMask('decimal', {
+                groupSeparator: '.',
+                digits: 0,
+                min:0,
+                max:points
+            },document.getElementById('pointbet'));
+        });
+        setTimeout(()=>{
+            globalCommons.InputMask('decimal', {
+                groupSeparator: '.',
+                digits: 0,
+                min:0,
+                max:points
+            },document.getElementById('pointbet'));
+            globalCommons.InputMask('decimal', {
+                groupSeparator: '.',
+                digits: 0,
+                min:0,
+            },document.getElementById('pointget')); 
+        },1000);
+        loadMoreData();
+        
+        $('#betHistoryModal').on('show.bs.modal', function () {
+            fetch('/api/all-bet-user-history')
+               .then(response => response.json())
+               .then(data => {
+                    if (data.ok) {
+                        const betHistory = data.data;
+                        const betTable = document.getElementById('bet-user-history');
+                        const tbody = betTable.getElementsByTagName('tbody')[0];
+                        //clear tbody
+                        while (tbody.firstChild) {
+                            tbody.removeChild(tbody.firstChild);
+                        }
+                        //prepend row to tbody
+                        for (let i = 0; i < betHistory.length; i++) {
+                            const bet = betHistory[i];
+                            const row = document.createElement('tr');
+                            const cell1 = document.createElement('td');
+                            const cell2 = document.createElement('td');
+                            const cell3 = document.createElement('td');
+                            const cell4 = document.createElement('td');
+                            const cell5 = document.createElement('td');
+                            const cell6 = document.createElement('td');
+                            cell1.textContent = bet.date;
+                            cell2.textContent = bet.ratioBet + '/' + bet.ratioWon;
+                            cell5.textContent = bet.betOnPlayer == 1 ? 'Gà xanh' : 'Gà đỏ';
+                            cell3.textContent = bet.pointsBet + 'đ';
+                            cell4.textContent = bet.win == true ? bet.pointsWin + 'đ' : '-';
+                            cell6.textContent = bet.winner == 1 ? 'Gà xanh' : 'Gà đỏ';
+                            row.appendChild(cell1);
+                            row.appendChild(cell2);
+                            row.appendChild(cell3);
+                            row.appendChild(cell4);
+                            row.appendChild(cell5);
+                            row.appendChild(cell6);
+                            tbody.appendChild(row);
+                        }
+                    }
+                })
+               .catch(error => console.error(error));
+        });
+        
+        $(document).on('click', '.btn-thamgia', function () {
+                const betGuid = $(this).data('id');
+                const betPoints = $(this).data('bet');
+                $.confirm({
+                    title: 'Tham gia kèo!',
+                    content: 'Dùng ' + betPoints + ' điểm để tham gia kèo này?',
+                    closeIcon: true,
+                    buttons: {
+                        confirm: {
+                            text: 'Đồng ý',
+                            btnClass: 'btn-primary',
+                            action: function () {
+                                fetch('/api/bet-join/', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        BetGuid: betGuid,
+                                        Points: betPoints
+                                    })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                        if (data.ok) {
+                                            $.alert({ title: 'Thông báo!', content: 'Bạn đã tham gia kèo thành công!', });
+                                            betJoins.push(betGuid);
+                                        }
+                                    })
+                                .catch(error => console.error(error));
+                            }
+                        },
+                        cancel: {
+                            text: 'Hủy',
+                            btnClass: 'btn-secondary',
+                            action: function () {
+                                //do nothing
+                            }
+                        }
+                    }
+                });
+            });
+        
+        fetch('/api/bet-joins-list')
+           .then(response => response.json())
+           .then(data => {
+                if (data.ok) {
+                    betJoins = data.data;
+                } else{
+                    betJoins = [];
+                }
+           })
+           .catch(error => console.error(error));
+        });
+    </script>
+}
+
+@code {
+    [CascadingParameter] public PageState PageState { get; set; } = default!;
+    private Livestream? Livestream { get; set; } = new();
+    private MarkupString InputStream { get; set; }
+    private string? PageTitle { get; set; }
+
+    protected override void OnInitialized()
+    {
+        var livestream = LivestreamService.GetLiveAsync();
+        
+        Livestream = livestream;
+        PageTitle = livestream?.Title;
+        InputStream = new MarkupString(livestream?.LivestreamInput ?? "");
+    }
+
+}

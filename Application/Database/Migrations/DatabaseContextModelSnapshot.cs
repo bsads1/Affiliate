@@ -17,7 +17,7 @@ namespace Affiliate.Application.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.1")
+                .HasAnnotation("ProductVersion", "8.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -59,6 +59,14 @@ namespace Affiliate.Application.Database.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("points_bet");
 
+                    b.Property<double>("RatioBet")
+                        .HasColumnType("double precision")
+                        .HasColumnName("ratio_bet");
+
+                    b.Property<double>("RatioWon")
+                        .HasColumnType("double precision")
+                        .HasColumnName("ratio_won");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -75,6 +83,144 @@ namespace Affiliate.Application.Database.Migrations
                         .HasName("pk_bets");
 
                     b.ToTable("bets", (string)null);
+                });
+
+            modelBuilder.Entity("Affiliate.Application.Models.BetJoin", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid>("BetGuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("bet_guid");
+
+                    b.Property<int>("BetOnPlayer")
+                        .HasColumnType("integer")
+                        .HasColumnName("bet_on_player");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guid");
+
+                    b.Property<DateTime>("JoinDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("join_date");
+
+                    b.Property<Guid>("LivestreamGuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("livestream_guid");
+
+                    b.Property<long>("PointsBet")
+                        .HasColumnType("bigint")
+                        .HasColumnName("points_bet");
+
+                    b.Property<double>("RatioBet")
+                        .HasColumnType("double precision")
+                        .HasColumnName("ratio_bet");
+
+                    b.Property<double>("RatioWon")
+                        .HasColumnType("double precision")
+                        .HasColumnName("ratio_won");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserGuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_guid");
+
+                    b.HasKey("Id")
+                        .HasName("pk_bet_joins");
+
+                    b.ToTable("bet_joins", (string)null);
+                });
+
+            modelBuilder.Entity("Affiliate.Application.Models.BetPlace", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Bet")
+                        .HasColumnType("integer")
+                        .HasColumnName("bet");
+
+                    b.Property<DateTime>("BetDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("bet_date");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guid");
+
+                    b.Property<bool>("IsComplete")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_complete");
+
+                    b.Property<Guid>("LivestreamGuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("livestream_guid");
+
+                    b.Property<int>("MoneyBet")
+                        .HasColumnType("integer")
+                        .HasColumnName("money_bet");
+
+                    b.Property<int>("MoneyEarn")
+                        .HasColumnType("integer")
+                        .HasColumnName("money_earn");
+
+                    b.Property<int>("Player")
+                        .HasColumnType("integer")
+                        .HasColumnName("player");
+
+                    b.Property<long>("PointsBet")
+                        .HasColumnType("bigint")
+                        .HasColumnName("points_bet");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserGuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_guid");
+
+                    b.HasKey("Id")
+                        .HasName("pk_bet_places");
+
+                    b.ToTable("bet_places", (string)null);
                 });
 
             modelBuilder.Entity("Affiliate.Application.Models.ConfigPage", b =>
@@ -317,6 +463,86 @@ namespace Affiliate.Application.Database.Migrations
                     b.ToTable("menu_items", (string)null);
                 });
 
+            modelBuilder.Entity("Affiliate.Application.Models.OrderPoint", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountBankName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("account_bank_name");
+
+                    b.Property<long>("Amount")
+                        .HasColumnType("bigint")
+                        .HasColumnName("amount");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("bank_name");
+
+                    b.Property<string>("BankNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("bank_number");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<long>("ExchangeRate")
+                        .HasColumnType("bigint")
+                        .HasColumnName("exchange_rate");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guid");
+
+                    b.Property<bool>("IsDelete")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_delete");
+
+                    b.Property<string>("OrderUid")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("order_uid");
+
+                    b.Property<long>("Points")
+                        .HasColumnType("bigint")
+                        .HasColumnName("points");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserGuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_guid");
+
+                    b.HasKey("Id")
+                        .HasName("pk_order_points");
+
+                    b.ToTable("order_points", (string)null);
+                });
+
             modelBuilder.Entity("Affiliate.Application.Models.PageItem", b =>
                 {
                     b.Property<int>("Id")
@@ -456,7 +682,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 1,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("dcd0b491-84a4-4148-8c2c-944fa1dd47b1"),
+                            Guid = new Guid("620c3291-f103-486f-bb55-5877ce283064"),
                             Name = "Master"
                         },
                         new
@@ -464,7 +690,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 2,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("2a916b50-4354-4bc7-ba43-e262ae6c6c2a"),
+                            Guid = new Guid("4b8d4386-c220-426f-bf59-81a9d6a55b37"),
                             Name = "Admin"
                         },
                         new
@@ -472,7 +698,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 3,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("93d9c878-c817-467d-aee9-79cb772c4c2b"),
+                            Guid = new Guid("679eab29-2dc7-47f1-b63b-85483c98d1ce"),
                             Name = "Editor"
                         },
                         new
@@ -480,7 +706,7 @@ namespace Affiliate.Application.Database.Migrations
                             Id = 4,
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
-                            Guid = new Guid("c47aa676-06a7-412b-a5d4-9ad42a3abde0"),
+                            Guid = new Guid("bed2def8-c46b-4b03-b2e0-73b667807a1d"),
                             Name = "User"
                         });
                 });
@@ -655,6 +881,73 @@ namespace Affiliate.Application.Database.Migrations
                         .HasDatabaseName("ix_user_roles_user_id");
 
                     b.ToTable("user_roles", (string)null);
+                });
+
+            modelBuilder.Entity("Affiliate.Application.Models.Withdraw", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("account_number");
+
+                    b.Property<long>("Amount")
+                        .HasColumnType("bigint")
+                        .HasColumnName("amount");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("bank_name");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guid");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<long>("Points")
+                        .HasColumnType("bigint")
+                        .HasColumnName("points");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserGuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_guid");
+
+                    b.HasKey("Id")
+                        .HasName("pk_withdraws");
+
+                    b.ToTable("withdraws", (string)null);
                 });
 
             modelBuilder.Entity("PageSeo", b =>

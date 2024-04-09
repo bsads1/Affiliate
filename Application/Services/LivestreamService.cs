@@ -20,7 +20,7 @@ public class LivestreamService(IDbContextFactory<DatabaseContext> factory, Datab
             if (livestream != null)
             {
                 livestream.IsDelete = true;
-                livestream.UpdatedAt = DateTime.UtcNow;
+                livestream.UpdatedAt = DateTime.Now.ToUniversalTime();
                 livestream.UpdatedBy = updateBy;
                 await db.SaveChangesAsync();
                 return livestream;
@@ -68,6 +68,7 @@ public class LivestreamService(IDbContextFactory<DatabaseContext> factory, Datab
                 {
                     livestream.Guid = Guid.NewGuid();
                 }
+
                 livestream.UpdatedAt = form.UpdatedAt;
                 livestream.UpdatedBy = form.UpdatedBy;
                 livestream.Title = form.Title;
@@ -80,7 +81,7 @@ public class LivestreamService(IDbContextFactory<DatabaseContext> factory, Datab
                 livestream.AvailableTimeEnd = form.AvailableTimeEnd?.ToUniversalTime();
                 livestream.Player1Name = form.Player1Name;
                 livestream.Player2Name = form.Player2Name;
-                livestream.IsShow = form.IsShow;
+                //.IsShow = form.IsShow;
                 if (form.HasImage)
                 {
                     livestream.Image = form.Image;
@@ -112,24 +113,25 @@ public class LivestreamService(IDbContextFactory<DatabaseContext> factory, Datab
         var result = new List<BetDto>();
         try
         {
-            var betsDto = await (from bet in context.Bets.AsNoTracking() 
-                    join u in context.Users.AsNoTracking() on bet.UserGuid equals u.Guid
-                    where bet.LivestreamGuid == liveGuid
-                    orderby bet.BetDate descending
-                    select new BetDto { 
-                        Id = bet.Id, 
-                        UserName = u.Name, 
-                        BetDate = bet.BetDate, 
-                        BetOnPlayer = bet.BetOnPlayer,
-                        PointsBet = bet.PointsBet, 
-                        CreatedAt = bet.CreatedAt, 
-                        UpdatedAt = bet.UpdatedAt 
-                    }).ToListAsync();
+            var betsDto = await (from bet in context.Bets.AsNoTracking()
+                join u in context.Users.AsNoTracking() on bet.UserGuid equals u.Guid
+                where bet.LivestreamGuid == liveGuid
+                orderby bet.BetDate descending
+                select new BetDto
+                {
+                    Id = bet.Id,
+                    UserName = u.Name,
+                    BetDate = bet.BetDate,
+                    BetOnPlayer = bet.BetOnPlayer,
+                    PointsBet = bet.PointsBet,
+                    CreatedAt = bet.CreatedAt,
+                    UpdatedAt = bet.UpdatedAt
+                }).ToListAsync();
             return betsDto;
         }
         catch (Exception e)
         {
-            var exception = e.InnerException?.Message ?? e.Message; 
+            var exception = e.InnerException?.Message ?? e.Message;
             Log.Error("Error getting live bets: {Exception}", exception);
         }
 
@@ -147,7 +149,7 @@ public class LivestreamService(IDbContextFactory<DatabaseContext> factory, Datab
             {
                 livestream.Winner = winner;
                 livestream.IsEnd = true;
-                livestream.UpdatedAt = DateTime.UtcNow;
+                livestream.UpdatedAt = DateTime.Now.ToUniversalTime();
                 livestream.UpdatedBy = createBy;
                 await db.SaveChangesAsync();
                 var ratio = 0;
@@ -159,43 +161,52 @@ public class LivestreamService(IDbContextFactory<DatabaseContext> factory, Datab
                         if (livestream.Winner == 1)
                         {
                             ratio = int.Parse(split[1]) / int.Parse(split[0]);
-                        } else if (livestream.Winner == 2)
+                        }
+                        else if (livestream.Winner == 2)
                         {
                             ratio = int.Parse(split[0]) / int.Parse(split[1]);
                         }
                     }
                 }
-                var allBets = await db.Bets.AsNoTracking().Where(p => p.LivestreamGuid == livestream.Guid).ToListAsync();
+
+                var allBets = await db.Bets.AsNoTracking().Where(p => p.LivestreamGuid == livestream.Guid)
+                    .ToListAsync();
                 var winningBets = allBets.Where(p => p.BetOnPlayer == winner).ToList();
                 if (winningBets.Count > 0)
                 {
-                    var userInBets = (from bet in winningBets 
-                                      join u in db.Users.AsNoTracking() on bet.UserGuid equals u.Guid
-                                      select u).Distinct().ToList();
-                    foreach (var user in userInBets)
+                    var userInBets = (from bet in winningBets
+                        join u in db.Users.AsNoTracking() on bet.UserGuid equals u.Guid
+                        select u).Distinct().ToList();
+                    foreach (var item in winningBets)
                     {
-                        var points = winningBets.Sum(p => p.PointsBet) * ratio;
-                        user.Points += points;
-                        db.Users.Update(user);
-                        var transactionPoint = new TransactionPoint
+                        var user = userInBets.FirstOrDefault(p => p.Guid == item.UserGuid);
+                        var points = (long) (item.PointsBet * (item.RatioWon/item.RatioBet));
+                        if (user != null)
                         {
-                            UserId = user.Guid,
-                            TransactionTimestamp = DateTime.UtcNow,
-                            PointsChanged = points,
-                            TransactionType = TransactionType.Redemption.ToString(),
-                            TransactionDescription = "Winning bets on " + livestream.Title,
-                            CreatedAt = DateTime.UtcNow,
-                            UpdatedAt = DateTime.UtcNow,
-                            Guid = Guid.NewGuid(),
-                            CreatedBy = createBy,
-                            UpdatedBy = createBy,
-                            AccountBalance = user.Points,
-                            AmountChanged = 0
-                        };
-                        db.TransactionPoints.Add(transactionPoint);
+                            user.Points += points;
+                            db.Users.Update(user);
+                            var transactionPoint = new TransactionPoint
+                            {
+                                UserId = user.Guid,
+                                TransactionTimestamp = DateTime.Now.ToUniversalTime(),
+                                PointsChanged = points,
+                                TransactionType = TransactionType.Redemption.ToString(),
+                                TransactionDescription = "Winning bets on " + livestream.Title,
+                                CreatedAt = DateTime.Now.ToUniversalTime(),
+                                UpdatedAt = DateTime.Now.ToUniversalTime(),
+                                Guid = Guid.NewGuid(),
+                                CreatedBy = createBy,
+                                UpdatedBy = createBy,
+                                AccountBalance = user.Points,
+                                AmountChanged = 0
+                            };
+                            db.TransactionPoints.Add(transactionPoint);
+                        }
                     }
+
                     await db.SaveChangesAsync();
                 }
+
                 await transaction.CommitAsync();
                 return livestream;
             }
@@ -206,6 +217,54 @@ public class LivestreamService(IDbContextFactory<DatabaseContext> factory, Datab
             var exception = e.InnerException?.Message ?? e.Message;
             Log.Error("Error updating winner: {Exception}", exception);
         }
+
         return null;
+    }
+
+    public async Task<bool> UpdatePublishAsync(int liveId, Guid createBy)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        try
+        {
+            var livestreams = await db.Livestreams.ToListAsync();
+            foreach (var livestream in livestreams)
+            {
+                if (livestream.Id == liveId)
+                {   
+                    livestream.IsShow = true;
+                    livestream.UpdatedAt = DateTime.Now.ToUniversalTime();
+                    livestream.UpdatedBy = createBy;
+                }
+                else
+                {   
+                    livestream.IsShow = false;
+                    livestream.UpdatedAt = DateTime.Now.ToUniversalTime();
+                    livestream.UpdatedBy = createBy;
+                }   
+                db.Livestreams.Update(livestream);
+            }   
+            await db.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            var exception = e.InnerException?.Message ?? e.Message;
+            Log.Error("Error updating publish: {Exception}", exception);
+            return false;
+        }
+    }
+
+    public Livestream? GetLiveAsync()
+    {
+        try
+        {
+            var livestreams = context.Livestreams.AsNoTracking().FirstOrDefault(p => p.IsShow == true);
+            
+            return livestreams;
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
     }
 }

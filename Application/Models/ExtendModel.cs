@@ -5,8 +5,7 @@ namespace Affiliate.Application.Models;
 
 public class ExtendModel : BaseModel
 {
-    [Required]
-    public Guid Guid { get; set; } = Guid.NewGuid();
+    [Required] public Guid Guid { get; set; } = Guid.NewGuid();
 
     public Guid CreatedBy { get; set; }
 

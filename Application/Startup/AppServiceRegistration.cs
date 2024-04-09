@@ -77,6 +77,7 @@ public static class AppServicesRegistration
         services.AddScoped<UsersService>();
         services.AddScoped<RolesService>();
         services.AddScoped<LivestreamService>();
+        services.AddScoped<OrderPointService>();
         services.AddScoped<PageSeoService>();
         services.AddScoped<IAuthValidator, SparkAuthValidator>();
         services.AddScoped<AuthService>();

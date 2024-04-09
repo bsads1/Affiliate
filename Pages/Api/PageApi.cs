@@ -87,7 +87,9 @@ public class PageApi : IRoute
                         bannerData = await form.FileBanner.SaveAsync();
                     } 
 
-                    form.Slug = form.Name.ToSlug();
+                    if(string.IsNullOrWhiteSpace(form.Slug))
+                        form.Slug = form.Name.ToSlug();
+                    
                     form.CreatedBy = createBy;
                     form.HasImage = imageData.HasData;
                     form.HasBanner = bannerData.HasData;
@@ -168,7 +170,8 @@ public class PageApi : IRoute
                             }
                         }
 
-                        form.Slug = form.Name.ToSlug();
+                        if(string.IsNullOrWhiteSpace(form.Slug))
+                            form.Slug = form.Name.ToSlug();
                         form.UpdatedBy = createBy;
                         form.HasImage = imageData.HasData;
                         form.HasBanner = bannerData.HasData;

@@ -6,13 +6,14 @@
 @inject DatabaseContext DbContext
 <PageTitle>Live manager</PageTitle>
 <Toolbar PageTitle="@PageTitle" ToolbarItems="@ToolbarItems"></Toolbar>
-<table class="w-full bg-white shadow-md rounded my-6">
+<table class="w-full bg-white shadow-md rounded my-6 live-table">
     <thead>
     <tr>
         <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">#</th>
         <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Name</th>
         <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Slug</th>
         <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Updated</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Live</th>
         <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-right">Actions</th>
     </tr>
     </thead>
@@ -27,8 +28,27 @@
                 <td class="py-2 px-4 border-b border-gray-200">@livestream.Title</td>
                 <td class="py-2 px-4 border-b border-gray-200">/@livestream.Slug</td>
                 <td class="py-2 px-4 border-b border-gray-200">@livestream.UpdatedAt</td>
+                <td class="py-2 px-4 border-b border-gray-200">
+                    @if (livestream.IsShow)
+                    {
+                        <button data-enhanced="false" href="javascipt:void(0);" onclick="updateLive(@livestream.Id);" class="text-green-500 flex gap-1 items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#19fc00" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                                <circle cx="8" cy="8" r="8"/>
+                            </svg> Live
+                        </button>
+                    }
+                    else
+                    {
+                        <button data-enhanced="false" href="javascipt:void(0);" onclick="updateLive(@livestream.Id);" class="text-gray-500 flex gap-1 items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#989898" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                                <circle cx="8" cy="8" r="8"/>
+                            </svg> Offline
+                        </button>
+                    }
+                </td>
                 <td class="py-2 px-4 border-b border-gray-200 text-right">
                     <div class="flex justify-end gap-2">
+                        <a class="btn btn-sm btn-info text-base-100" href="@($"/admin/live/update/{livestream.Id}")">END LIVE</a>
                         <a class="btn btn-sm btn-primary text-base-100" href="@($"/admin/live/edit/{livestream.Id}")">Edit</a>
                         <a class="btn btn-sm btn-error text-base-100" onclick="dialog.open(@livestream.Id);" href="javascript:">Delete</a>
                     </div>
@@ -109,6 +129,23 @@ const dialog = (function () {
         confirmDelete: deleteUser
     }
 })();
+
+function updateLive(id) {
+    const target = document.querySelector(`.live-table`);
+    globalCommons.ShowLoading(target);
+    fetch('/api/live/update-publish/' + id ) 
+    .then(response => response.json())
+     .then(data => {
+         console.log(data)
+        if (data.ok) {
+            window.location.reload();
+        } else {
+            globalCommons.CreateAlert(data.message, 'error', target);
+            globalCommons.HideLoading(target);
+        }
+    }) .catch(error => { console.log(error); });
+    
+}
 </script>
 
 @code {

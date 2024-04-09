@@ -21,7 +21,7 @@ public class UserManageService(DatabaseContext db, UsersService usersService)
                 Points = 0,
                 Email = userPostFormDto.Email,
                 Password = usersService.GetSha256Hash(userPostFormDto.Password),
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now.ToUniversalTime(),
                 CreatedBy = userPostFormDto.CreatedBy
             };
 
@@ -58,12 +58,13 @@ public class UserManageService(DatabaseContext db, UsersService usersService)
             if (userToUpdate != null)
             {
                 userToUpdate.Email = userPostForm.Email;
-                userToUpdate.UpdatedAt = DateTime.UtcNow;
+                userToUpdate.UpdatedAt = DateTime.Now.ToUniversalTime();
                 userToUpdate.UpdatedBy = userPostForm.UpdatedBy;
                 if (string.IsNullOrEmpty(userToUpdate.Uid))
                 {
                     userToUpdate.Uid = GuidExtension.TaoUid();
                 }
+
                 if (userPostForm.Roles != null && userPostForm.Roles.Any())
                 {
                     var userRoles = await db.UserRoles.Where(x => x.UserId == userToUpdate.Guid).ToListAsync();
@@ -106,7 +107,7 @@ public class UserManageService(DatabaseContext db, UsersService usersService)
             if (user != null)
             {
                 user.IsDelete = true;
-                user.UpdatedAt = DateTime.UtcNow;
+                user.UpdatedAt = DateTime.Now.ToUniversalTime();
                 user.UpdatedBy = updateBy;
                 await db.SaveChangesAsync();
                 return user;

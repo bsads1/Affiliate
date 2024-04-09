@@ -46,11 +46,11 @@
                         </div>
                     </div>
                     <div class="col-span-1 space-y-2">
-                        <div>
+                        @*<div>
                             <div class="form-control">
                                 <label class="label cursor-pointer">
                                     <span class="label-text">Publish</span>
-                                    <input type="checkbox" id="publish" name="Publish" class="checkbox checkbox-primary text-base-100"/>
+                                    <input type="checkbox" id="publish" name="IsShow" class="checkbox checkbox-primary text-base-100"/>
                                 </label>
                             </div>
                         </div>
@@ -59,7 +59,7 @@
                             <div class="join w-full">
                                 <div class="w-full">
                                     <div>
-                                        <input type="text" name="StartTimeStr" id="startTime" value="@Form.StartTime" class="input input-bordered w-full datetime"/>
+                                        <input type="text" name="StartTimeStr" id="startTime" value="@Form.StartTimeStr" class="input input-bordered w-full datetime"/>
                                     </div>
                                 </div>
                                 <div class="indicator">
@@ -76,7 +76,7 @@
                             <div class="join w-full">
                                 <div class="w-full">
                                     <div>
-                                        <input type="text" name="CloseTimeStr" id="closeTime" value="@Form.CloseTime" class="input input-bordered w-full datetime"/>
+                                        <input type="text" name="CloseTimeStr" id="closeTime" value="@Form.CloseTimeStr" class="input input-bordered w-full datetime"/>
                                     </div>
                                 </div>
                                 <div class="indicator">
@@ -93,7 +93,7 @@
                             <div class="join w-full">
                                 <div class="w-full">
                                     <div>
-                                        <input type="text" name="AvailableTimeStartStr" id="availableTimeStart" value="@Form.AvailableTimeStart" class="input input-bordered w-full datetime"/>
+                                        <input type="text" name="AvailableTimeStartStr" id="availableTimeStart" value="@Form.AvailableTimeStartStr" class="input input-bordered w-full datetime"/>
                                     </div>
                                 </div>
                                 <div class="indicator">
@@ -110,7 +110,7 @@
                             <div class="join w-full">
                                 <div class="w-full">
                                     <div>
-                                        <input type="text" name="AvailableTimeEndStr" id="availableTimeEnd" value="@Form.AvailableTimeEnd" class="input input-bordered w-full datetime"/>
+                                        <input type="text" name="AvailableTimeEndStr" id="availableTimeEnd" value="@Form.AvailableTimeEndStr" class="input input-bordered w-full datetime"/>
                                     </div>
                                 </div>
                                 <div class="indicator">
@@ -121,7 +121,7 @@
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                        </div>*@
                         <div>
                             <label for="file" class="block text-sm font-medium text-gray-700">Thumbnail</label>
                             <div>
@@ -182,7 +182,7 @@
             const quillContent = document.querySelector('#content-editor .ql-editor').innerHTML;
             document.getElementById('content').value = quillContent;
             const formData = new FormData(form);
-            formData.set('IsShow', document.getElementById('publish').checked);
+            //formData.set('IsShow', document.getElementById('publish').checked);
 
             try {
                 const response = await fetch('/api/live', {
@@ -274,6 +274,10 @@
         PageTitle = $"Create Live";
         Form.StartTime = DateTime.Now;
         Form.AvailableTimeStart = DateTime.Now;
+        
+        Form.StartTimeStr = Form.StartTime.ToString("dd/MM/yyyy HH:mm");
+        Form.AvailableTimeStartStr = Form.AvailableTimeStart?.ToString("dd/MM/yyyy HH:mm");
+        
     }
 
 }

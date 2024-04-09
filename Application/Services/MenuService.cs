@@ -22,7 +22,7 @@ public class MenuService(IDbContextFactory<DatabaseContext> factory, DatabaseCon
                 ParentId = parentId,
                 Level = level,
                 CreatedBy = createBy,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now.ToUniversalTime()
             };
             db.MenuItems.Add(menu);
             var result = await db.SaveChangesAsync();
@@ -55,7 +55,7 @@ public class MenuService(IDbContextFactory<DatabaseContext> factory, DatabaseCon
             }
 
             var menusCached = await cache.GetOrSetAsync<List<MenuItem>>(CacheKey,
-                 async _ => await GetMenuItemsAsyncLocal(),
+                async _ => await GetMenuItemsAsyncLocal(),
                 TimeSpan.FromMinutes(5));
             return menusCached;
         }
@@ -81,7 +81,7 @@ public class MenuService(IDbContextFactory<DatabaseContext> factory, DatabaseCon
             menu.Title = title;
             menu.Link = link;
             menu.UpdatedBy = createBy;
-            menu.UpdatedAt = DateTime.UtcNow;
+            menu.UpdatedAt = DateTime.Now.ToUniversalTime();
 
             var result = await db.SaveChangesAsync();
             if (result > 0)
@@ -113,7 +113,7 @@ public class MenuService(IDbContextFactory<DatabaseContext> factory, DatabaseCon
             menu.ParentId = parentId;
             menu.Level = level;
             menu.UpdatedBy = createBy;
-            menu.UpdatedAt = DateTime.UtcNow;
+            menu.UpdatedAt = DateTime.Now.ToUniversalTime();
 
             var result = await db.SaveChangesAsync();
             if (result > 0)

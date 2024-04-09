@@ -1,0 +1,197 @@
+@page "/user/deposit/bank"
+@using Affiliate.Application.Extensions
+@attribute [Authorize]
+@layout WebLayout
+
+<PageTitle>Nạp tiền</PageTitle>
+
+<div class="container mb-3">
+    <nav class="bg-gray-100 py-2" aria-label="Breadcrumb">
+        <ol class="max-w-7xl mx-auto flex space-x-2 breadcrumbs">
+            <li class="text-white">
+                <a href="/dashboard" class="hover:underline">Tài khoản</a>
+                <span class="mx-2">></span>
+            </li>
+            <li class="text-white">
+                <a href="/user/deposit" class="hover:underline">Nạp tiền</a>
+                <span class="mx-2">></span>
+            </li>
+            <li class="text-white">
+                <a href="/user/deposit/bank" aria-current="page">Tạo yêu cầu</a>
+            </li>
+        </ol>
+    </nav>
+
+    <div class="rounded-2lg my-3 border border-jacarta-100 bg-white p-6 transition-shadow hover:shadow-lg dark:border-jacarta-600 dark:bg-jacarta-700 w-full flex gap-3">
+        <div>
+            <style>
+                    me .text-yellow{
+                        color: #ffcc00;
+                    }
+                    me {
+                    color: #fff;
+                    }
+                </style>
+            <div>
+                <strong class="uppercase text-yellow">Quý khách vui lòng chuyển tiền với thông tin sau để được cập nhật tiền.</strong>
+            </div>
+            <ul class="list-disc list-inside">
+                <li class="flex">Ngân hàng: BIDV</li>
+                <li class="flex">Chủ tài khoản: DEMO</li>
+                <li class="flex">
+                    Số tài khoản: <strong style="margin: 0 10px;">1234567890</strong>
+                    <a title="copy" href="javascript:void(0)" onclick="copyToClipboard('1234567890')" class="text-sm text-blue-500 hover:text-blue-700 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-copy" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"/>
+                        </svg>
+                        Copy
+                    </a>
+                </li>
+                <li class="flex">
+                    Nội dung chuyển khoản: <strong class="text-red" style="margin: 0 10px;">@Uid</strong>
+                    <a title="copy" href="javascript:void(0)" onclick="copyToClipboard('@Uid')" class="text-sm text-blue-500 hover:text-blue-700 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-copy" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"/>
+                        </svg>
+                        Copy
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="rounded-2lg mb-3 border border-jacarta-100 bg-white p-6 transition-shadow hover:shadow-lg dark:border-jacarta-600 dark:bg-jacarta-700 w-full text-center flex flex-col gap-3">
+        <style>
+            me .input {
+            background: rgba(251, 250, 250, 0.1);
+            color: #fff;
+            font-size: 30px;
+            line-height: 50px;
+            padding: 10px 15px;
+            border: 0;
+            display: block;
+            width: 100%;
+            border-radius: 15px;
+            text-align: center;
+            }
+        </style>
+        <input id="price" onkeyup="changePrice()" onchange="changePrice()" type="text" class="input w-full" min="200000" max="300000000" value="0">
+        <em class="text-red">(* Tối thiểu 200.000, tối đa 300.000.000)</em>
+    </div>
+    <div class="rounded-2lg mb-3 border border-jacarta-100 bg-white p-6 transition-shadow hover:shadow-lg dark:border-jacarta-600 dark:bg-jacarta-700 w-full gap-3">
+        <style>
+            me {
+                color: #fff;
+            }
+            me .row{
+            border-bottom: 1px solid #333;
+            }
+            me .row:last-child{
+            border-bottom: none;
+            }
+        </style>
+        <div class="row py-3">
+            <div class="col">Số tiền thực tế</div>
+            <div class="col text-right">
+                <span class="text-green" id="money-real">0</span>
+            </div>
+        </div>
+        <div class="row py-3">
+            <div class="col">Điểm quy đổi</div>
+            <div class="col text-right">
+                <span class="text-red" id="money-exchange">0</span>
+            </div>
+        </div>
+        <div class="row py-3">
+            <div class="col">Mức quy đổi</div>
+            <div class="col text-right">
+                <span class="text-green">25.000 đ = 1 điểm</span>
+            </div>
+        </div>
+    </div>
+    <div class="mb-3">
+        <a href="javascript:void(0)" onclick="makeOrder()" class="rounded-2lg bg-red text-white py-4 px-4 hover:bg-red-600 w-full text-center block">
+            Nạp tiền
+        </a>
+    </div>
+</div>
+
+<script src="js/jquery-3.7.1.min.js"></script>
+<link rel="stylesheet" href="js/jconfirm/jquery-confirm.min.css">
+<script src="js/jconfirm/jquery-confirm.min.js"></script>
+<script >
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text);
+    }
+    
+    function changePrice() {
+        const price = document.getElementById("price").value;
+        const moneyReal = price;
+        const moneyExchange = (price / 25000).toFixed(0);
+        document.getElementById("money-real").innerHTML = moneyReal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        document.getElementById("money-exchange").innerHTML = moneyExchange.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+    
+    function makeOrder() {
+        const price = document.getElementById("price").value;
+
+        if (price>=200000) {
+            const moneyExchange = (price / 25000).toFixed(0);
+            const bankName = "BIDV";
+            const accountNumber = "1234567890";
+            const orderUid = `@Uid`;
+            const postData = {
+                Amount: price,
+                Points: moneyExchange,
+                ExchangeRate: 25000,
+                BankName: bankName,
+                AccountBankName: "DEMO",
+                BankNumber: accountNumber,
+                OrderUid: orderUid
+            };
+            $.confirm({
+                  title: 'Xác nhận tạo yêu cầu!',
+                  content: 'Tạo yêu cầu nạp tiền với số tiền ' + price + 'đ cho '+moneyExchange +' điểm?',
+                  closeIcon: true,
+                  buttons: {
+                      confirm: function () {   
+                        fetch('/api/user/deposit', {
+                              method: 'POST',
+                              headers: {
+                                  'Content-Type': 'application/json',
+                                  'Accept': 'application/json'
+                              },
+                              body: JSON.stringify(postData)
+                          }).then(function (response) {
+                              return response.json();
+                          }).then(function (data) {
+                              if (data.ok) {
+                                  $.confirm({
+                                      title: 'Thông báo!',
+                                      content: 'Tạo yêu cầu thành công! Hệ thống sẽ xử lý yêu cầu nạp tiền của bạn.',
+                                      buttons: {
+                                          ok: function () {
+                                              window.location.reload();
+                                          }
+                                      },
+                                      backgroundDismiss: function(){
+                                          window.location.reload();
+                                          return false;
+                                      },
+                                  });
+                              } else {
+                                  $.alert('Tạo yêu cầu thất bại! Vui lòng kiểm tra lại thông tin chuyển khoản.');
+                              }
+                          }).finally(()=>{
+                          });
+                      }
+                  }
+              });
+        } else {
+            $.alert('Phải nhập số tiền hợp lệ!');
+        }
+    }
+</script>
+
+@code {
+    private string Uid { get; set; } = GuidExtension.TaoUid(haveNumber: true, haveLowerCase: false, haveUpperCase: false);
+}

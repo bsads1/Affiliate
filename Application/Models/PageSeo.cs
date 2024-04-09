@@ -4,16 +4,11 @@ using Affiliate.Application.Models;
 
 public class PageSeo : ExtendModel
 {
-    [Required]
-    [MaxLength(10)]
-    public string PageType { get; set; }
+    [Required] [MaxLength(10)] public string PageType { get; set; }
 
-    [Required]
-    [MaxLength(10)]
-    public string PageId { get; set; }
+    [Required] [MaxLength(10)] public string PageId { get; set; }
 
-    [MaxLength(100)]
-    public string PageRoute { get; set; } = "";
+    [MaxLength(100)] public string PageRoute { get; set; } = "";
 
     [Required]
     [MaxLength(200)]
@@ -28,13 +23,9 @@ public class PageSeo : ExtendModel
     [Description("Should be less than 100 characters")]
     public string Keywords { get; set; } = "";
 
-    [MaxLength(255)]
-    public string Image { get; set; } = "";
+    [MaxLength(255)] public string Image { get; set; } = "";
 
-    [MaxLength(255)]
-    [Url]
-    public string Canonical { get; set; } = "";
+    [MaxLength(255)] [Url] public string Canonical { get; set; } = "";
 
-    [MaxLength(30)]
-    public string Robots { get; set; } = "";
+    [MaxLength(30)] public string Robots { get; set; } = "";
 }

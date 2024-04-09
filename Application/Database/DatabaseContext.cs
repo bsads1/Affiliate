@@ -10,7 +10,7 @@ public class DatabaseContext : DbContext
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    { 
+    {
     }
 
     public virtual DbSet<User> Users { set; get; }
@@ -23,6 +23,10 @@ public class DatabaseContext : DbContext
     public virtual DbSet<Bet> Bets { get; set; }
     public virtual DbSet<Livestream> Livestreams { get; set; }
     public virtual DbSet<PageSeo> PageSeos { get; set; }
+    public virtual DbSet<OrderPoint> OrderPoints { get; set; }
+    public virtual DbSet<Withdraw> Withdraws { get; set; }
+    public virtual DbSet<BetPlace> BetPlaces { get; set; }
+    public virtual DbSet<BetJoin> BetJoins { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -55,8 +59,10 @@ public class DatabaseContext : DbContext
             entity.HasIndex(e => e.RoleId);
             entity.Property(e => e.UserId);
             entity.Property(e => e.RoleId);
-            entity.HasOne(d => d.Role).WithMany(p => p.UserRoles).HasForeignKey(d => d.RoleId).HasPrincipalKey(p=>p.Guid);
-            entity.HasOne(d => d.User).WithMany(p => p.UserRoles).HasForeignKey(d => d.UserId).HasPrincipalKey(p=>p.Guid);
+            entity.HasOne(d => d.Role).WithMany(p => p.UserRoles).HasForeignKey(d => d.RoleId)
+                .HasPrincipalKey(p => p.Guid);
+            entity.HasOne(d => d.User).WithMany(p => p.UserRoles).HasForeignKey(d => d.UserId)
+                .HasPrincipalKey(p => p.Guid);
         });
 
         builder.Entity<Role>().HasData(
@@ -65,7 +71,7 @@ public class DatabaseContext : DbContext
             new Role { Id = 3, Guid = Guid.NewGuid(), Name = CustomRoles.Editor },
             new Role { Id = 4, Guid = Guid.NewGuid(), Name = CustomRoles.User }
         );
-        
+
         //TransactionPoint
         builder.Entity<TransactionPoint>(entity =>
         {

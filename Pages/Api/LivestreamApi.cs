@@ -3,7 +3,9 @@ using Affiliate.Application.Dtos;
 using Affiliate.Application.Extensions;
 using Affiliate.Application.Models;
 using Affiliate.Application.Services;
+using Affiliate.Application.Services.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Spark.Library.Extensions;
 using Spark.Library.Routing;
 
@@ -61,35 +63,35 @@ public class LivestreamApi : IRoute
                     {
                         if (!string.IsNullOrEmpty(form.StartTimeStr))
                         {
-                            form.StartTime = DateTimeOffset.TryParseExact(form.StartTimeStr, "dd/MM/yyyy HH:mm",
+                            form.StartTime = DateTime.TryParseExact(form.StartTimeStr, "dd/MM/yyyy HH:mm",
                                 CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt)
-                                ? dt.UtcDateTime
-                                : DateTime.UtcNow;
+                                ? DateTime.SpecifyKind(dt, DateTimeKind.Utc)
+                                : DateTime.Now.ToUniversalTime();
                         }
 
                         if (!string.IsNullOrEmpty(form.CloseTimeStr))
                         {
-                            form.CloseTime = DateTimeOffset.TryParseExact(form.CloseTimeStr, "dd/MM/yyyy HH:mm",
+                            form.CloseTime = DateTime.TryParseExact(form.CloseTimeStr, "dd/MM/yyyy HH:mm",
                                 CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt)
-                                ? dt.UtcDateTime
+                                ? DateTime.SpecifyKind(dt, DateTimeKind.Utc)
                                 : null;
                         }
 
                         if (!string.IsNullOrEmpty(form.AvailableTimeStartStr))
                         {
-                            form.AvailableTimeStart = DateTimeOffset.TryParseExact(form.AvailableTimeStartStr,
+                            form.AvailableTimeStart = DateTime.TryParseExact(form.AvailableTimeStartStr,
                                 "dd/MM/yyyy HH:mm",
                                 CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt)
-                                ? dt.UtcDateTime
+                                ? DateTime.SpecifyKind(dt, DateTimeKind.Utc)
                                 : null;
                         }
 
                         if (!string.IsNullOrEmpty(form.AvailableTimeEndStr))
                         {
-                            form.AvailableTimeEnd = DateTimeOffset.TryParseExact(form.AvailableTimeEndStr,
+                            form.AvailableTimeEnd = DateTime.TryParseExact(form.AvailableTimeEndStr,
                                 "dd/MM/yyyy HH:mm",
                                 CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt)
-                                ? dt.UtcDateTime
+                                ? DateTime.SpecifyKind(dt, DateTimeKind.Utc)
                                 : null;
                         }
 
@@ -119,9 +121,10 @@ public class LivestreamApi : IRoute
                             }
                         }
 
-                        form.Slug = form.Title.ToSlug();
+                        if (!string.IsNullOrWhiteSpace(form.Slug))
+                            form.Slug = form.Title.ToSlug();
                         form.CreatedBy = createBy;
-                        form.CreatedAt = DateTime.UtcNow;
+                        form.CreatedAt = DateTime.Now.ToUniversalTime();
                         form.HasImage = imageData.HasData;
                         form.Image = imageData.Path;
 
@@ -176,43 +179,45 @@ public class LivestreamApi : IRoute
 
                         if (!string.IsNullOrEmpty(form.StartTimeStr))
                         {
-                            form.StartTime = DateTimeOffset.TryParseExact(form.StartTimeStr, "dd/MM/yyyy HH:mm",
+                            form.StartTime = DateTime.TryParseExact(form.StartTimeStr, "dd/MM/yyyy HH:mm",
                                 CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt)
-                                ? dt.UtcDateTime
-                                : DateTime.UtcNow;
+                                ? DateTime.SpecifyKind(dt, DateTimeKind.Utc)
+                                : DateTime.Now.ToUniversalTime();
                         }
 
                         if (!string.IsNullOrEmpty(form.CloseTimeStr))
                         {
-                            form.CloseTime = DateTimeOffset.TryParseExact(form.CloseTimeStr, "dd/MM/yyyy HH:mm",
+                            form.CloseTime = DateTime.TryParseExact(form.CloseTimeStr, "dd/MM/yyyy HH:mm",
                                 CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt)
-                                ? dt.UtcDateTime
+                                ? DateTime.SpecifyKind(dt, DateTimeKind.Utc)
                                 : null;
                         }
 
                         if (!string.IsNullOrEmpty(form.AvailableTimeStartStr))
                         {
-                            form.AvailableTimeStart = DateTimeOffset.TryParseExact(form.AvailableTimeStartStr,
+                            form.AvailableTimeStart = DateTime.TryParseExact(form.AvailableTimeStartStr,
                                 "dd/MM/yyyy HH:mm",
                                 CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt)
-                                ? dt.UtcDateTime
+                                ? DateTime.SpecifyKind(dt, DateTimeKind.Utc)
                                 : null;
                         }
 
                         if (!string.IsNullOrEmpty(form.AvailableTimeEndStr))
                         {
-                            form.AvailableTimeEnd = DateTimeOffset.TryParseExact(form.AvailableTimeEndStr,
+                            form.AvailableTimeEnd = DateTime.TryParseExact(form.AvailableTimeEndStr,
                                 "dd/MM/yyyy HH:mm",
                                 CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt)
-                                ? dt.UtcDateTime
+                                ? DateTime.SpecifyKind(dt, DateTimeKind.Utc)
                                 : null;
                         }
 
-                        form.Slug = form.Title.ToSlug();
+                        if (!string.IsNullOrWhiteSpace(form.Slug))
+                            form.Slug = form.Title.ToSlug();
                         form.HasImage = imageData.HasData;
                         form.Image = imageData.Path;
-                        form.UpdatedAt = DateTime.UtcNow;
+                        form.UpdatedAt = DateTime.Now.ToUniversalTime();
                         form.UpdatedBy = createBy;
+
                         var result = await livestreamService.UpdateAsync(form);
                         return Results.Ok(new
                         {
@@ -224,20 +229,44 @@ public class LivestreamApi : IRoute
 
         app.MapPost("/api/live/update-winner/{live:int}",
                 async (int live, [FromBody] PostForm form, HttpContext context,
-                    LivestreamService livestreamService) =>
+                    LivestreamService livestreamService,
+                    IHubContext<BetHub> hubContext) =>
                 {
                     var createBy = Guid.Parse(context.User.Claims.FirstOrDefault(p => p.Type == "Guid")?.Value ?? "0");
                     var result = await livestreamService.UpdateWinnerAsync(live, form.winner, createBy);
+                    if (result != null)
+                    {
+                        await hubContext.Clients.All.SendAsync("EndLive", live);
+                    }
                     return Results.Ok(new
                     {
                         Ok = result != null, result?.Winner
                     });
                 })
             .RequireAuthorization(CustomPolicies.MasterAdminAccess);
+
+        app.MapGet("/api/live/update-publish/{id:int}",
+            async (int id, HttpContext context,
+                LivestreamService livestreamService,
+                IHubContext<BetHub> hubContext) =>
+            {
+                var createBy = Guid.Parse(context.User.Claims.FirstOrDefault(p => p.Type == "Guid")?.Value ?? "0");
+                var result = await livestreamService.UpdatePublishAsync(id, createBy);
+                //call hub
+                await hubContext.Clients.All.SendAsync("NewLive", result);
+                
+                return Results.Ok(new
+                {
+                    ok = result
+                });
+            })
+            .DisableAntiforgery()
+            .RequireAuthorization(CustomPolicies.MasterAdminAccess);
     }
 
     private class PostForm
     {
+        public int? Id { get; set; }
         public int winner { get; set; }
     }
 }

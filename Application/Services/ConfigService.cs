@@ -36,7 +36,7 @@ public class ConfigService(IDbContextFactory<DatabaseContext> factory, IFusionCa
             {
                 config = configPostFormDto.Adapt<ConfigPage>();
                 config.CreatedBy = configPostFormDto.CreatedBy;
-                config.CreatedAt = DateTime.UtcNow;
+                config.CreatedAt = DateTime.Now.ToUniversalTime();
                 await db.ConfigPages.AddAsync(config);
             }
             else
@@ -59,7 +59,7 @@ public class ConfigService(IDbContextFactory<DatabaseContext> factory, IFusionCa
                 }
 
                 config.UpdatedBy = configPostFormDto.CreatedBy;
-                config.UpdatedAt = DateTime.UtcNow;
+                config.UpdatedAt = DateTime.Now.ToUniversalTime();
             }
 
             await db.SaveChangesAsync();

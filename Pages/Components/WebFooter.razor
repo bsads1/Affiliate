@@ -1,0 +1,56 @@
+@if (PageState.Config != null)
+{
+    <footer class="page-footer bg-white dark:bg-jacarta-900">
+        <div class="container">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="w-full">
+                    <a href="/" class="mb-6 inline-block">
+                        <img src="@PageState.Config?.Logo" class="max-h-7 dark:hidden" alt="@PageState.Config.PageName">
+                        <img src="@PageState.Config?.Logo" class="hidden max-h-7 dark:block" alt="@PageState.Config.PageName">
+                    </a>
+                    <div class="mb-12 dark:text-jacarta-300">
+                        Thương hiệu hàng đầu Việt Nam, mang lại nhiều hình thức giải trí và trải nghiệm mới.
+                    </div>
+                </div>
+                <div class="w-full">
+                    <h3 class="mb-6 font-display text-jacarta-700 dark:text-white">Hình thức thanh toán</h3>
+                    <ul class="flex flex-col space-y-1 dark:text-jacarta-300">
+                        <li>
+                            <img src="/images/vcb.png" class="max-w-[calc(120px)]" alt="">
+                        </li>
+                        <li>
+                            <img src="/images/tcb.svg" class="max-w-[calc(120px)]" alt="">
+                        </li>
+                        <li>
+                            <img src="/images/bidv.png" class="max-w-[calc(120px)]" alt="">
+                        </li>
+                        <li>
+                            <img src="/images/vtb.png" class="max-w-[calc(120px)]" alt="">
+                        </li>
+                    </ul>
+                </div>
+                <div class="w-full">
+                    <h3 class="mb-6 font-display text-jacarta-700 dark:text-white">Liên hệ</h3>
+                    <ul class="flex flex-col space-y-1 dark:text-jacarta-300">
+                        <li>
+                            Telegram: 0987654321
+                        </li>
+                        <li>
+                            ZALO: 0987654321
+                        </li>
+                        <li>
+                            EMAIL: no@@thankyou.com
+                        </li>
+                        <li>
+                            Địa chỉ: 123 Nguyễn Văn Linh, P.12, Q.10, TP.HCM
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+}
+
+@code {
+    [Parameter] public PageState PageState { get; set; } = default!;
+}

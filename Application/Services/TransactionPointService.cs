@@ -25,15 +25,16 @@ public class TransactionPointService(DatabaseContext context, IDbContextFactory<
         }
     }
 
-    public async Task<PaginatedList<TransactionPoint>> GetTransactionPoints(Guid userGuid, int page, int pageSize, string? filter, string? sort)
+    public async Task<PaginatedList<TransactionPoint>> GetTransactionPoints(Guid userGuid, int page, int pageSize,
+        string? filter, string? sort)
     {
         try
         {
-            if(string.IsNullOrEmpty(filter))
+            if (string.IsNullOrEmpty(filter))
                 filter = "";
             var queryable = context.TransactionPoints.AsNoTracking()
                 .Where(p => p.UserId == userGuid);
-            if(!string.IsNullOrEmpty(filter))
+            if (!string.IsNullOrEmpty(filter))
                 queryable = queryable.Where(p => p.TransactionType.ToLower() == filter.ToLower());
             if (!string.IsNullOrEmpty(sort))
             {
@@ -47,6 +48,7 @@ public class TransactionPointService(DatabaseContext context, IDbContextFactory<
                     _ => queryable
                 };
             }
+
             return await queryable.OrderByDescending(p => p.TransactionTimestamp).ToPaginatedListAsync(page, pageSize);
         }
         catch (Exception e)
@@ -55,7 +57,8 @@ public class TransactionPointService(DatabaseContext context, IDbContextFactory<
         }
     }
 
-    public async Task<bool> AddPointAsync(int userId, long point, long money, string description, DateTimeOffset datetime,
+    public async Task<bool> AddPointAsync(int userId, long point, long money, string description,
+        DateTimeOffset datetime,
         Guid byUser)
     {
         await using var db = await factory.CreateDbContextAsync();
@@ -80,8 +83,8 @@ public class TransactionPointService(DatabaseContext context, IDbContextFactory<
                 PointsChanged = point,
                 TransactionType = TransactionType.Purchase.ToString(),
                 TransactionDescription = description,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now.ToUniversalTime(),
+                UpdatedAt = DateTime.Now.ToUniversalTime(),
                 Guid = Guid.NewGuid(),
                 CreatedBy = byUser,
                 UpdatedBy = byUser,
@@ -103,7 +106,8 @@ public class TransactionPointService(DatabaseContext context, IDbContextFactory<
         }
     }
 
-    public async Task<bool> RemovePointAsync(int userId, long point, long money, string description, DateTimeOffset datetime,
+    public async Task<bool> RemovePointAsync(int userId, long point, long money, string description,
+        DateTime datetime,
         Guid byUser)
     {
         await using var db = await factory.CreateDbContextAsync();
@@ -125,12 +129,12 @@ public class TransactionPointService(DatabaseContext context, IDbContextFactory<
             var transactionPoint = new TransactionPoint
             {
                 UserId = user.Guid,
-                TransactionTimestamp = datetime.UtcDateTime,
+                TransactionTimestamp = datetime.ToUniversalTime(),
                 PointsChanged = point,
                 TransactionType = TransactionType.Adjustment.ToString(),
                 TransactionDescription = description,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now.ToUniversalTime(),
+                UpdatedAt = DateTime.Now.ToUniversalTime(),
                 Guid = Guid.NewGuid(),
                 CreatedBy = byUser,
                 UpdatedBy = byUser,

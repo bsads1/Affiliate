@@ -19,7 +19,7 @@
         </div>
     }
     <div class="container">
-        <div class="mx-auto mb-16 max-w-lg">
+        <div class="mx-auto mb-16">
             <h1 class="mb-4 font-display text-2xl text-jacarta-700 dark:text-white sm:text-5xl">
                 @Livestream.Title
             </h1>
@@ -36,7 +36,7 @@
                                 </div>
                             </div>
                         }
-                        @if (PageState.User.IsAuthenticated)
+                        @*@if (PageState.User.IsAuthenticated)
                         {
                             <div class="w-full">
                                 Ratio: @Livestream.Ratio
@@ -93,14 +93,24 @@
                                     </tbody>
                                 </table>
                             }
-                        }
+                        }*@
                         <article class="w-full">
+                            <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#betModal" class="inline-block rounded-full bg-accent py-3 px-8 text-center font-semibold text-white shadow-accent-volume transition-all hover:bg-accent-dark">Tạo kèo</a>
+                            
+                            <div class="bet-dashboard" style="height: 300px; overflow-y: auto">
+                                <table class="w-full table-auto" id="bet-table">
+                                    <thead></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+
+                            @*<button class="btn btn-primary" type="button" id="send-message">Send</button>*@
                             @Content
                         </article>
                     </div>
                 </article>
             </div>
-            <aside class="basis-3/12 lg:pl-5">
+            @*<aside class="basis-3/12 lg:pl-5">
                 <form action="/search" class="relative mb-12 block">
                     <input type="search" class="w-full rounded-2xl border border-jacarta-100 py-[0.6875rem] px-4 pl-10 text-jacarta-700 placeholder-jacarta-500 focus:ring-accent dark:border-transparent dark:bg-white/[.15] dark:text-white dark:placeholder-white" placeholder="Search">
                     <button type="submit" class="absolute left-0 top-0 flex h-full w-12 items-center justify-center rounded-2xl">
@@ -110,7 +120,7 @@
                         </svg>
                     </button>
                 </form>
-            </aside>
+            </aside>*@
         </div>
     </div>
 </section>
@@ -166,6 +176,133 @@
         </div>
     </div>
 </div>
+ 
+<div class="modal fade" id="betModal" tabindex="-1" aria-labelledby="betModalLabel" aria-hidden="true">
+    <div class="modal-dialog max-w-2xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="betModalLabel">Bet</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="h-6 w-6 fill-jacarta-700 dark:fill-white">
+                        <path fill="none" d="M0 0h24v24H0z"/>
+                        <path d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body p-6">
+                <div class="mb-2 flex items-center justify-between">
+                    <span class="font-display text-sm font-semibold text-jacarta-700 dark:text-white">Points</span>
+                </div>
+                <div class="relative mb-2 flex items-center overflow-hidden rounded-lg border border-jacarta-100 dark:border-jacarta-600">
+                    <style>
+                        me .gap-2{
+                            gap: 0.5rem;
+                        }
+                        me .w-200px{
+                            width: 200px;
+                        }
+                        me .w-100px{
+                            width: 100px;
+                        }
+                        me .checkbox-wrapper-24{
+                            padding: 10px;
+                            border: 1px solid #ccc;
+                            border-radius: 5px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: #fff;
+                        }
+                    </style>
+                    <form id="frmBet w-full">
+                        <div class="mx-auto w:200px">
+                            <div class="flex gap-3 justify-center w-full p-2">
+                                <div>
+                                    <div class="checkbox-wrapper-24">
+                                        <input type="radio" id="player1" name="check" value="1"/>
+                                        <label for="player1">
+                                            <span></span>Gà xanh
+                                        </label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="checkbox-wrapper-24">
+                                        <input type="radio" id="player2" name="check" value="2"/>
+                                        <label for="player2">
+                                            <span></span>Gà đỏ
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-center w-full p-2 gap-2">
+                                <span class="block font-display text-jacarta-700 dark:text-white">Đặt</span>
+                                <select class="ratio-select" id="ratioBet" name="ratioBet">
+                                    <option value="1">1</option>
+                                    <option value="1.5">1.5</option>
+                                    <option value="2">2</option>
+                                    <option value="2.5">2.5</option>
+                                    <option value="3">3</option>
+                                    <option value="3.5">3.5</option>
+                                    <option value="4">4</option>
+                                    <option value="4.5">4.5</option>
+                                    <option value="5">5</option>
+                                    <option value="5.5">5.5</option>
+                                    <option value="6">6</option>
+                                    <option value="6.5">6.5</option>
+                                    <option value="7">7</option>
+                                    <option value="7.5">7.5</option>
+                                    <option value="8">8</option>
+                                    <option value="8.5">8.5</option>
+                                    <option value="9">9</option>
+                                    <option value="9.5">9.5</option>
+                                    <option value="10">10</option>
+                                </select>
+                                <span class="block font-display text-jacarta-700 dark:text-white">Ăn</span>
+                                <select class="ratio-select" id="ratioWon" name="ratioWon">
+                                    <option value="1">1</option>
+                                    <option value="1.5">1.5</option>
+                                    <option value="2">2</option>
+                                    <option value="2.5">2.5</option>
+                                    <option value="3">3</option>
+                                    <option value="3.5">3.5</option>
+                                    <option value="4">4</option>
+                                    <option value="4.5">4.5</option>
+                                    <option value="5">5</option>
+                                    <option value="5.5">5.5</option>
+                                    <option value="6">6</option>
+                                    <option value="6.5">6.5</option>
+                                    <option value="7">7</option>
+                                    <option value="7.5">7.5</option>
+                                    <option value="8">8</option>
+                                    <option value="8.5">8.5</option>
+                                    <option value="9">9</option>
+                                    <option value="9.5">9.5</option>
+                                    <option value="10">10</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-start w-full p-2 gap-2">
+                                <span class="block font-display text-jacarta-700 dark:text-white w-100px">Số tiền đặt</span>
+                                <input type="text" class="h-12 w-full flex-[3] border-0 focus:ring-inset focus:ring-accent w-200px" id="pointbet" name="PointBet" placeholder="Amount" value="0"/>
+                            </div>
+                            <div class="flex items-center justify-start w-full p-2 gap-2">
+                                <span class="block font-display text-jacarta-700 dark:text-white w-100px">Số tiền thắng</span>
+                                <input type="text" class="h-12 w-full flex-[3] border-0 focus:ring-inset focus:ring-accent w-200px" readonly id="pointget" name="PointGet" placeholder="Amount" value="0"/>
+                            </div>
+                        </div>
+                        <input type="hidden" id="live" name="Live" value="@Livestream.Id"/>
+                        <input type="hidden" id="bet" name="Bet" value=""/>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="flex items-center justify-center space-x-4">
+                    <button type="submit" class="rounded-full bg-accent py-3 px-8 text-center font-semibold text-white shadow-accent-volume transition-all hover:bg-accent-dark" id="bet-btn">Bet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div style="display:none;"
      hx-get="/api/topbar-content/live/@Livestream.Id"
      hx-trigger="load"
@@ -178,17 +315,12 @@
     <input type="hidden" name="pageId" value="@Livestream.Id"/>
     <input type="hidden" name="pageType" value="Live"/>
 </form>
-
+ 
+<script src="js/jquery-3.7.1.min.js"></script>
+<link rel="stylesheet" href="js/jconfirm/jquery-confirm.min.css">
+<script src="js/jconfirm/jquery-confirm.min.js"></script>
 @if (Livestream.IsEnd == false)
 {
-    <script src="js/jquery-3.7.1.min.js"></script>
-    <link rel="stylesheet" href="js/jconfirm/jquery-confirm.min.css">
-    <script src="js/jconfirm/jquery-confirm.min.js"></script>
-    <style>
-        .jc-bs3-container{
-            width: fit-content!important;
-        }
-    </style>
     <script >
     let betTo = -1;
     function setbet(){
@@ -216,7 +348,6 @@
                           }).then(function (response) {
                               return response.json();
                           }).then(function (data) {
-                              console.log(data);
                               if (data.ok) {
                                   window.location.reload();
                               } else {
@@ -238,18 +369,149 @@
     function bet(i){
         document.getElementById('amount').value = 0;
         betTo = i;
-    }
-    setTimeout(()=>{
-        globalCommons.InputMask('decimal', {
-            groupSeparator: '.',
-            digits: 0,
-            min:0,
-            max:@PageState.User.Points
-        },document.getElementById('amount'));
-        //prevent post form submit
-    },1000)
+    } 
 </script>
 }
+<script src="js/signalr.min.js"></script>
+<script>
+    var page = 1;
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/betHub")
+        .build();
+    
+    function loadMoreData() {
+        fetch('/api/bet-history?liveId=' + @Livestream.Id + '&page=' + page)
+           .then(response => response.json())
+           .then(data => {
+                if (data.ok) {
+                    const betHistory = data.data;
+                    const betTable = document.getElementById('bet-history');
+                    betTable.innerHTML = '';
+                    for (let i = 0; i < betHistory.length; i++) {
+                        const bet = betHistory[i];
+                        const row = betTable.insertRow();
+                        const betDate = row.insertCell();
+                        const betPlayer = row.insertCell();
+                        const betAmount = row.insertCell();
+                        const betResult = row.insertCell();
+                        betDate.innerHTML = bet.betDate;
+                        betPlayer.innerHTML = GetPlayerBetOn(bet.betBetOnPlayer);
+                        betAmount.innerHTML = bet.betAmount;
+                        betResult.innerHTML = bet.betResult;
+                    }
+                }
+            })
+           .catch(error => console.error(error));
+    }
+    document.getElementById('bet-dashboard').addEventListener('scroll', function() {
+      if (this.scrollTop + this.clientHeight >= this.scrollHeight) {
+          page++;
+          loadMoreData();
+      }
+    });
+    //table bet-history on scroll to end will load more data
+
+    connection.on("ReceiveDataUpdate", function (data) {
+        //load bet history from server
+        page = 1;
+        //empty table tbody first
+        document.querySelector('#bet-history tbody').innerHTML = '';
+       
+        loadMoreData();
+        /*$('.bet-dashboard').append(data);
+        $('.bet-dashboard').append('<br>');
+        console.log(data);*/
+    });
+
+    async function start() {
+        try {
+            if (connection.state == signalR.HubConnectionState.Disconnected)
+            await connection.start();
+            console.log("SignalR Connected.");
+        } catch (err) {
+            console.log(err);
+        }
+            setTimeout(start, 3000);
+    };
+
+    start();
+    
+    /*$('#send-message').click(function () {
+        var now = new Date();
+        var message = "Message at " + now.toLocaleString();
+        connection.invoke("SendDataUpdate", message);
+    });*/
+    
+    document.getElementById('bet-btn').addEventListener('click', postBet);
+    $('.ratio-select, #pointbet').on('change', function () {
+        const ratioBet = document.getElementById('ratioBet').value;
+        const ratioWon = document.getElementById('ratioWon').value;
+        const pointBet = document.getElementById('pointbet').value;
+        const ratio = (parseFloat(ratioWon) / parseFloat(ratioBet)).toFixed(2);
+        var point = pointBet.replace(/\./g, "");
+        point = parseFloat(point);
+        const pointWin = (point * ratio).toFixed(0);
+        document.getElementById('pointget').value = pointWin;
+    });
+    function postBet(){
+        console.log('bet')
+        const formBet = document.getElementById('frmBet');
+        const bet = formBet.elements['check'].value;
+        const ratioBet = formBet.elements['ratioBet'].value;
+        const ratioWon = formBet.elements['ratioWon'].value;
+        const pointBet = formBet.elements['PointBet'].value;
+        const pointget = formBet.elements['PointGet'].value;
+        const live = formBet.elements['Live'].value;
+        const betData = { Live: live, Bet: bet, 
+        RatioBet: ratioBet, RatioWon: ratioWon,
+            PointBet: pointBet.replace(/\./g, ""), PointGet: pointget.replace(/\./g, "") };
+        let player  = '';
+        if (bet==1) player = 'Gà xanh';
+        else if (bet==2) player = 'Gà đỏ';
+        $.confirm({
+            title: 'Confirm!',
+            content: `Đặt ${pointBet} điểm cho ${player} ?`,
+            closeIcon: true,
+            buttons: {
+                confirm: function () {
+                    globalCommons.ShowLoading(document.querySelector('#betModal .modal-content'));
+                    connection.invoke("SendDataUpdate", JSON.stringify(betData))
+                        .then((result) => {
+                            globalCommons.HideLoading(document.querySelector('#betModal .modal-content'));                           
+                        })
+                        .catch((error) => {
+                            globalCommons.HideLoading(document.querySelector('#betModal .modal-content'));
+                            console.error("Error:", error);
+                        });
+                }
+            }
+        });
+    }
+    
+    //onload ready
+    $(document).ready(function () {
+        setTimeout(()=>{
+            
+            globalCommons.InputMask('decimal', {
+                groupSeparator: '.',
+                digits: 0,
+                min:0,
+                max:@PageState.User.Points
+            },document.getElementById('pointbet'));
+            globalCommons.InputMask('decimal', {
+                groupSeparator: '.',
+                digits: 0,
+                min:0,
+            },document.getElementById('pointget'));
+            globalCommons.InputMask('decimal', {
+                groupSeparator: '.',
+                digits: 0,
+                min:0,
+                max:@PageState.User.Points
+            },document.getElementById('amount'));
+        },1000)
+    });
+</script>
 
 @code {
     [Parameter] public string? Slug { get; set; } = "";
@@ -276,10 +538,10 @@
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Slug.ToLower() == Slug.ToLower() && p.IsDelete == false);
         if (livestream == null) NavigationManager.NavigateTo("/");
-        var betHistory = await DbContext.Bets.AsNoTracking()
+        /*var betHistory = await DbContext.Bets.AsNoTracking()
             .Where(p => p.UserGuid == PageState.User.Guid)
             .OrderByDescending(p => p.BetDate)
-            .ToListAsync();
+            .ToListAsync();*/
         var pageSeo = await DbContext.PageSeos.AsNoTracking()
             .FirstOrDefaultAsync(p => p.PageRoute == path);
         if (pageSeo != null)
@@ -287,7 +549,7 @@
             PageSeo = pageSeo;
         }
 
-        BetHistory = betHistory;
+        //BetHistory = betHistory;
         Livestream = livestream;
         PageTitle = livestream?.Title ?? (PageSeo.Title ?? "");
         Content = new MarkupString(livestream?.Content ?? "");
@@ -300,4 +562,3 @@
     }
 
 }
-

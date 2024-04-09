@@ -35,6 +35,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Nanoid" Version="3.0.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
 		<PackageReference Include="Spark.Library" Version="1.0.3" />
 		<PackageReference Include="Vite.AspNetCore" Version="1.12.0" />
@@ -50,6 +51,12 @@
 	<ItemGroup>
 	  <_ContentIncludedByDefault Remove="wwwroot\js\datetimepicker\DateTimePicker.min.css" />
 	  <_ContentIncludedByDefault Remove="wwwroot\js\datetimepicker\DateTimePicker.min.js" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <AdditionalFiles Include="Pages\Admin\Blog\Create.razor" />
+	  <AdditionalFiles Include="Pages\Admin\Blog\Edit.razor" />
+	  <AdditionalFiles Include="Pages\Admin\Blog\Index.razor" />
 	</ItemGroup>
 	
 	<Target Name="DebugEnsureNodeEnv" BeforeTargets="Build;PublishBuildAssets" Condition=" !Exists('node_modules') ">

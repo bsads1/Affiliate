@@ -68,16 +68,16 @@ public class PageSeoService(IDbContextFactory<DatabaseContext> factory)
             Robots = form.Robots,
             Image = form.HasImage ? form.Image : "",
             CreatedBy = form.CreatedBy,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.Now.ToUniversalTime(),
             UpdatedBy = form.UpdatedBy,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.Now.ToUniversalTime()
         };
         return pageSeo;
     }
 
     private async Task<PageSeo> UpdatePageSeo(PageSeoPostFormDto form, PageSeo old)
     {
-        old.UpdatedAt = DateTime.UtcNow;
+        old.UpdatedAt = DateTime.Now.ToUniversalTime();
         old.UpdatedBy = form.UpdatedBy;
         old.PageRoute = form.PageRoute;
         old.Title = form.Title;

@@ -181,8 +181,7 @@
                                 console.error('Error:', error);
                             });
                     },
-                    cancel: function () {
-                        return false;
+                    cancel: function () { 
                     }
                 }
             });
@@ -217,7 +216,8 @@
 
         PageTitle = "Update Livestream - " + LiveStream.Title;
         ToolbarItems.Add(
-            new ToolbarItem { Href = "/live/" + LiveStream.Slug, Text = "View Livestream", ClassList = "btn btn-primary text-base-100" }
+            //new ToolbarItem { Href = "/live/" + LiveStream.Slug, Text = "View Livestream", ClassList = "btn btn-primary text-base-100" }
+            new ToolbarItem { Href = "/game", Text = "View Game", ClassList = "btn btn-primary text-base-100" }
         );
 
         Bets = await DbContext.Bets.AsNoTracking().OrderBy(p => p.CreatedAt).Where(p => p.LivestreamGuid == LiveStream.Guid).ToListAsync();

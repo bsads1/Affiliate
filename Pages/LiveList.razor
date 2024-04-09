@@ -2,7 +2,7 @@
 @using Microsoft.EntityFrameworkCore
 @using Affiliate.Application.Extensions.Paging
 @layout WebLayout
-@inject DatabaseContext DbContext
+@inject IDbContextFactory<DatabaseContext> Factory
 @inject NavigationManager NavigationManager
 
 <PageTitle>@PageTitle</PageTitle>
@@ -64,7 +64,8 @@
     protected override async Task OnInitializedAsync()
     {
         if (Page < 1) Page = 1;
-        var pageItem = DbContext.Livestreams
+        await using var dbContext = await Factory.CreateDbContextAsync();
+        var pageItem = dbContext.Livestreams
             .AsNoTracking()
             .OrderBy(p => p.CreatedAt)
             .Where(p => p.IsDelete == false);

@@ -1,0 +1,349 @@
+@page "/admin/withdraws/{Page:int?}"
+@using Affiliate.Application.Dtos
+@using Affiliate.Application.Enums
+@using Affiliate.Application.Extensions
+@using Affiliate.Application.Extensions.Paging
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.EntityFrameworkCore
+@using System.Text.Json
+@attribute [Authorize(Policy = CustomPolicies.MasterAdminAccess)]
+@inject IDbContextFactory<DatabaseContext> Factory
+@inject NavigationManager NavigationManager
+<PageTitle>@PageTitle</PageTitle>
+<Toolbar PageTitle="@PageTitle" ToolbarItems="@ToolbarItems"></Toolbar>
+<style>
+    .jconfirm{
+        z-index: 1000;
+    }
+</style>
+<form action="/admin/withdraws/@Page" method="get" class="flex justify-between mb-4">
+    <div class="flex gap-4">
+        <div>
+            <input type="text" name="username" class="input input-bordered w-full max-w-xs" placeholder="Search by Username"
+                   value="@UsernameFilter"/>
+        </div>
+        <div>
+            <input type="text" name="email" class="input input-bordered w-full max-w-xs" placeholder="Search by Email"
+                   value="@EmailFilter"/>
+        </div>
+        <div>
+            <select id="selectFilter" name="status" class="select select-bordered w-full max-w-xs">
+                <option value="">All</option>
+                <option value="Pending">Pending</option>
+                <option value="Completed">Completed</option>
+                <option value="Rejected">Rejected</option>
+            </select>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary text-base-100">Apply Filter</button>
+</form>
+<table class="w-full bg-white shadow-md rounded my-6">
+    <thead>
+    <tr>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">#</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Name</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Date</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-right">Amount</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Bank</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-left">Status</th>
+        <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-700 text-right">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @if (_pages.Any())
+    {
+        var stt = Page * 10 - 9;
+        foreach (var pageItem in _pages)
+        {
+            <tr>
+                <td class="py-2 px-4 border-b border-gray-200">@stt</td>
+                <td class="py-2 px-4 border-b border-gray-200">
+                    <div class="flex flex-col">
+                        <span>@pageItem.UserName</span>
+                        <span>@pageItem.Email</span>
+                    </div>
+                    <input type="hidden" id="data_@pageItem.Id" value="@JsonSerializer.Serialize(pageItem)">
+                    <input type="hidden" id="date_@pageItem.Id" value="@pageItem.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")">
+                </td>
+                <td class="py-2 px-4 border-b border-gray-200">@pageItem.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                <td class="py-2 px-4 border-b border-gray-200 text-right">@pageItem.Amount.AddDecimalSeparator() đ</td>
+                <td class="py-2 px-4 border-b border-gray-200">
+                    <div class="flex flex-col">
+                        <span>@pageItem.BankName</span>
+                        <span>@pageItem.AccountNumber</span>
+                    </div>
+                </td>
+                <td class="py-2 px-4 border-b border-gray-200">
+                    @if (pageItem.Status == OrderPointStatus.Completed.ToString())
+                    {
+                        <span class="badge badge-accent">Hoàn thành</span>
+                    }
+                    else if (pageItem.Status == OrderPointStatus.Pending.ToString())
+                    {
+                        <span class="badge badge-ghost">Đang xử lý</span>
+                    }
+                    else if (pageItem.Status == OrderPointStatus.Rejected.ToString())
+                    {
+                        <span class="badge badge-error">Từ chối</span>
+                    }
+                </td>
+                <td class="py-2 px-4 border-b border-gray-200 text-right">
+                    @if (pageItem.Status == OrderPointStatus.Pending.ToString())
+                    {
+                        <div class="flex justify-end gap-2">
+                            <a class="btn btn-sm btn-primary text-base-100" onclick="dialogProcess.open(@pageItem.Id);" href="javascript:">Process</a>
+                        </div>
+                    }
+                </td>
+            </tr>
+            stt++;
+        }
+    }
+    </tbody>
+</table>
+<div class="flex justify-center mt-3">
+    <Pagination Route="@Route" CurrentPage="@Page" TotalPage="@_pages.TotalPages"/>
+</div>
+
+<dialog id="modal" class="modal">
+    <div class="modal-box modal-box-add">
+        <h3 class="font-bold text-lg">Add Points to Account <span class="text-accent" id="username_add_point"></span></h3>
+        <div id="add_result"></div>
+        <div id="info" class="prose">  
+        </div>
+        <div class="py-2">
+            <label>Points:</label>
+            <input type="text" name="point" class="input input-bordered input-success w-full number" placeholder="Points to add"/>
+        </div>
+        <div class="py-2">
+            <label>Money:</label>
+            <input type="text" name="money" class="input input-bordered input-success w-full number" placeholder="Money user spend"/>
+        </div>
+        <div class="py-2">
+            <label>Notes:</label>
+            <textarea name="note" class="input input-bordered w-full h-32"></textarea>
+        </div>
+        
+        <div class="modal-action">
+            <button class="btn btn-primary text-base-100" type="button" onclick="dialogProcess.confirm();">Confirm</button>
+            <button class="btn btn-error text-base-100" type="button" onclick="dialogProcess.refuse();">Refuse</button>
+            <button class="btn" type="button" onclick="dialogProcess.close();">Close</button>
+        </div>
+    </div>
+</dialog>
+
+<SectionContent SectionName="section-bottom">
+    <script > 
+//on load
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(()=>{
+        globalCommons.InputMask('decimal', {
+            groupSeparator: '.',
+            digits: 0,
+            min:0,
+            max:99999999999
+        },document.querySelectorAll('.number')); 
+        globalCommons.InputMask('datetime', {
+            inputFormat: 'dd/MM/yyyy HH:mm'
+        },document.querySelectorAll('.datetime'));
+    },500);
+    document.querySelectorAll('.datetime').forEach(element => {
+        element.addEventListener('click', () => {
+            element.select();
+        })
+    })
+    document.querySelector('#selectFilter').value = '@StatusFilter';
+})
+const dialogProcess = (function () {
+    let usr = 0;
+    let success = false;
+    const modal = document.getElementById('modal');
+    modal.addEventListener('close', (event) => {
+        usr = 0;
+        if (success) { 
+        }
+    });
+    
+    function confirmRefuse(){
+        const data = JSON.parse(document.querySelector('#data_' + usr).value);
+        const tmpUser = usr;
+        const note = modal.querySelector('textarea[name="note"]').value;
+        modal.close();
+        $.confirm({
+            title: 'Confirm!',
+            content: 'Are you sure you want to refuse this order?',
+            buttons: {                
+                confirm: function () {
+                    const target = modal.querySelector('.modal-box-add');
+                    globalCommons.ShowLoading(target);
+                    const postData = { Id: data.Id, Note: note };
+                    fetch('/api/point/refuse-withdraw', {
+                          method: 'POST',
+                          headers: {
+                              'Content-Type': 'application/json',
+                              'Accept': 'application/json'
+                          },
+                          body: JSON.stringify(postData)
+                      }).then(function (response) {
+                          return response.json();
+                      }).then(function (data) {
+                          if (data.ok) {
+                              success = true;
+                              modal.close();
+                              globalCommons.CreateToast('Refused successfully', 'success');
+                              setTimeout(()=>{window.location.reload();},2000);
+                          } else {
+                              globalCommons.CreateAlert('Failed to refuse', 'error', document.querySelector('#add_result'));
+                          }
+                      });
+                },
+                cancel: function () { 
+                    openDialog(tmpUser);
+                }
+            }
+        });
+    }
+    
+    function confirmAdd() {
+        const data = JSON.parse(document.querySelector('#data_' + usr).value);
+        const tmpUser = usr;
+        const point = modal.querySelector('input[name="point"]').value.replace(/\./g, '');
+        const money = modal.querySelector('input[name="money"]').value.replace(/\./g, '');
+        const note = modal.querySelector('textarea[name="note"]').value;
+        console.log(point + " " + money + " " + note)
+        modal.close();
+        $.confirm({
+            title: 'Confirm!',
+            content: 'Are you sure you want to process this order?', 
+            buttons: {                
+                confirm: function () {
+                    if (point == "" || money == "") {
+                        openDialog(tmpUser);
+                        globalCommons.CreateAlert('Please input all required fields', 'error', document.querySelector('#add_result'));
+                        return;
+                    }
+                    const postData = { Id: data.Id, Points: point, Amount: money, Note: note };
+                    console.log(postData)
+                    fetch('/api/point/confirm-withdraw', {
+                          method: 'POST',
+                          headers: {
+                              'Content-Type': 'application/json',
+                              'Accept': 'application/json'
+                          },
+                          body: JSON.stringify(postData)
+                      }).then(function (response) {
+                          return response.json();
+                      }).then(function (data) {
+                          if (data.ok) {
+                              success = true;
+                              modal.close();
+                              globalCommons.CreateToast('Processed successfully', 'success');
+                              setTimeout(()=>{window.location.reload();},2000);
+                          } else {
+                              globalCommons.CreateAlert('Failed to process', 'error', document.querySelector('#add_result'));
+                          }
+                      });
+                },
+                cancel: function () { 
+                    openDialog(tmpUser);
+                }
+            }
+        });
+    }
+
+    function openDialog(id) {
+        usr = id;
+        const data = JSON.parse(document.querySelector('#data_' + id).value);       
+        const createAt = document.querySelector('#date_' + id).value;
+        
+        document.querySelector('#modal input[name="point"]').value = "";
+        document.querySelector('#modal textarea[name="note"]').value = "";
+        document.querySelector('#modal input[name="money"]').value = "";
+        
+        document.querySelector('#info').innerHTML = `
+            <h4 class="flex justify-between">User Points: <span>${data.Points}</span></h4>
+            <h4 class="flex justify-between">Date: <span>${createAt}</span></h4>
+            <h4 class="flex justify-between">Amount: <span>${data.Amount} đ</span></h4>
+            <h4 class="flex justify-between">Bank Name: <span>${data.BankName}</span></h4>
+            <h4 class="flex justify-between">Account Number: <span>${data.AccountNumber}</span></h4>
+            `;
+        modal.showModal();
+    }
+
+    return {
+        open: openDialog,
+        close: () => {
+            modal.close();
+        },
+        confirm: confirmAdd,
+        refuse: confirmRefuse
+    }
+})();
+</script>
+</SectionContent>
+
+@code {
+    [Parameter] public int Page { get; set; } = 1;
+    private string PageTitle { get; set; } = "";
+    private List<ToolbarItem> ToolbarItems { get; set; } = [];
+
+    private const string Route = "/admin/withdraws/{0}";
+    PaginatedList<WithdrawDto> _pages = [];
+
+    private string UsernameFilter { get; set; }
+    private string EmailFilter { get; set; }
+    private string StatusFilter { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Page < 1) Page = 1;
+        PageTitle = "Withdraws list";
+
+        var uri = new UriBuilder(NavigationManager.Uri);
+        var queryParameters = QueryHelpers.ParseQuery(uri.Query);
+
+        UsernameFilter = queryParameters.TryGetValue("username", out var usernameValue) ? usernameValue.ToString() : string.Empty;
+        EmailFilter = queryParameters.TryGetValue("email", out var emailValue) ? emailValue.ToString() : string.Empty;
+        StatusFilter = queryParameters.TryGetValue("status", out var statusValue) ? statusValue.ToString() : string.Empty;
+
+        await using var dbContext = await Factory.CreateDbContextAsync(); 
+        var queryable = (from p in dbContext.Withdraws
+            join u in dbContext.Users on p.UserGuid equals u.Guid
+            select new WithdrawDto
+            {
+                Id = p.Id,
+                UserGuid = p.UserGuid,
+                Amount = p.Amount,
+                BankName = p.BankName,
+                AccountNumber = p.AccountNumber,
+                Status = p.Status,
+                Note = p.Note,
+                UserName = u.Name,
+                Email = u.Email,
+                CreatedAt = p.CreatedAt,
+                Points = u.Points
+            });
+
+        if (!string.IsNullOrEmpty(UsernameFilter))
+        {
+            queryable = queryable.Where(p => p.UserName.Contains(UsernameFilter));
+        }
+
+        if (!string.IsNullOrEmpty(EmailFilter))
+        {
+            queryable = queryable.Where(p => p.Email.Contains(EmailFilter));
+        }
+
+        if (!string.IsNullOrEmpty(StatusFilter))
+        {
+            queryable = queryable.Where(p => p.Status == StatusFilter);
+        }
+
+        _pages = await queryable 
+            .OrderByDescending(p => p.CreatedAt)
+            .AsNoTracking()
+            .ToPaginatedListAsync(Page, 50);
+        await dbContext.DisposeAsync();
+    }
+
+}

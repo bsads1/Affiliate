@@ -1,5 +1,6 @@
 @page "/admin/page/{Page:int?}"
 @using Affiliate.Application.Dtos
+@using Affiliate.Application.Enums
 @using Affiliate.Application.Extensions.Paging
 @using Microsoft.EntityFrameworkCore
 @attribute [Authorize(Policy = CustomPolicies.MasterAdminAccess)]
@@ -129,7 +130,7 @@ const dialog = (function () {
         if (Page < 1) Page = 1;
         PageTitle = "Page manager";
         var queryable = DbContext.PageItems.AsNoTracking()
-            .Where(p => p.IsDelete == false)
+            .Where(p => p.IsDelete == false && p.Type == PageItemType.Page.ToString())
             .OrderByDescending(p => p.CreatedAt);
         _pages = await queryable.ToPaginatedListAsync(Page, 10);
     }

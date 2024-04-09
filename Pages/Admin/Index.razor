@@ -1,19 +1,116 @@
 ﻿@page "/admin"
+@using Microsoft.EntityFrameworkCore
+@using Affiliate.Application.Enums
+@using Affiliate.Application.Extensions
 @attribute [Authorize(Policy = CustomPolicies.AdminAccess)]
-
+@inject IDbContextFactory<DatabaseContext> Factory
 <PageTitle>Admin Dashboard</PageTitle>
 
 <section>
-	<article class="">
-		<div class="card bg-base-100 shadow-xl">
-			<div class="card-body space-y-6">
-				<h1 class="text-3xl font-bold">
-					Admin Dashboard
-				</h1>
-				<p>
-					Only users with the admin role can access this page.
-				</p>
-			</div>
-		</div>
-	</article>
+    <article class="">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body space-y-6">
+                <h1 class="text-3xl font-bold">
+                    Admin Dashboard
+                </h1>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 my-5 gap-4 text-center">
+            <a href="/admin/orders" class="card bg-primary text-base-100 shadow-xl">
+                <div class="card-body space-y-6">
+                    Danh sách yêu cầu nạp điểm
+                </div>
+            </a>
+            <a href="/admin/withdraws" class="card bg-warning text-base-100 shadow-xl">
+                <div class="card-body space-y-6">
+                    Danh sách yêu cầu rút tiền
+                </div>
+            </a>
+        </div>
+        <!--gird 4 colums on desktop and mobile 2 colums-->
+        <div class="grid md:grid-cols-4 my-5 gap-4 text-center sm:grid-cols-1">
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body space-y-6">
+                    <div class="text-1xl font-bold">
+                        Số tài khoản
+                    </div>
+                    <div class="text-3xl font-bold">
+                        @UserCounts.AddDecimalSeparator()
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body space-y-6">
+                    <div class="text-1xl font-bold">
+                        Tổng số điểm
+                    </div>
+                    <div class="text-3xl font-bold">
+                        @TotalPoints.AddDecimalSeparator()
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body space-y-6">
+                    <div class="text-1xl font-bold">
+                        Tổng số tiền đã nạp hợp lệ
+                    </div>
+                    <div class="text-3xl font-bold">
+                        @TotalMoney.AddDecimalSeparator() đ
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body space-y-6">
+                    <div class="text-1xl font-bold">
+                        Tổng số tiền khách rút
+                    </div>
+                    <div class="text-3xl font-bold">
+                        @TotalMoneyWithdrawn.AddDecimalSeparator() đ
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
 </section>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000);
+        await using var db = await Factory.CreateDbContextAsync();
+        var users = await db.Users.AsNoTracking()
+            .OrderBy(p => p.Id)
+            .Select(p => new
+            {
+                p.Id, p.Points
+            }).ToListAsync();
+        UserCounts = users.Count;
+        TotalPoints = users.Sum(p => p.Points);
+        var orders = await db.OrderPoints.AsNoTracking()
+            .OrderBy(p => p.Id)
+            .Where(p => p.Status == OrderPointStatus.Completed.ToString())
+            .Select(p => new
+            {
+                p.Id, p.Amount
+            }).ToListAsync();
+
+        TotalMoney = orders.Sum(p => p.Amount);
+        var withdraws = await db.Withdraws.AsNoTracking()
+            .OrderBy(p => p.Id)
+            .Where(p => p.Status == OrderPointStatus.Completed.ToString())
+            .Select(p => new
+            {
+                p.Id, p.Amount
+            }).ToListAsync();
+        TotalMoneyWithdrawn = withdraws.Sum(p => p.Amount);
+    }
+
+    private long TotalMoney { get; set; }
+    private long TotalMoneyWithdrawn { get; set; }
+
+    private long TotalPoints { get; set; }
+
+    private int UserCounts { get; set; }
+
+}

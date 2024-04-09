@@ -30,8 +30,10 @@ public class AuthService
                 var id = userId ?? default(int);
                 return await _usersService.FindUserAsync(id);
             }
+
             return null;
         }
+
         return null;
     }
 
@@ -42,6 +44,7 @@ public class AuthService
         {
             return null;
         }
+
         return userId;
     }
 
