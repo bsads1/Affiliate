@@ -8,13 +8,12 @@ using Coravel;
 using Spark.Library.Auth;
 using Affiliate.Application.Jobs;
 using Spark.Library.Mail;
-using Vite.AspNetCore.Extensions;
 using FluentValidation;
 using Affiliate.Pages.Auth;
 using Affiliate.Application.Models;
 using Affiliate.Application.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Vite.AspNetCore;
 using ZiggyCreatures.Caching.Fusion;
 
 namespace Affiliate.Application.Startup;

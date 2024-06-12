@@ -47,11 +47,15 @@ public class BetApi : IRoute
                         orderby bet.BetDate ascending
                         select new
                         {
+                            bet.Id,
                             bet.PointsBet,
                             bet.BetOnPlayer,
                             bet.RatioBet,
                             bet.RatioWon,
                             bet.Guid,
+                            bet.UserGuid,
+                            bet.UserOpponentGuid,
+                            IsJoined = bet.UserOpponentGuid != null && bet.UserOpponentGuid != Guid.Empty,
                             PointsWin = bet.PointsBet * (long)(bet.RatioWon / bet.RatioBet),
                             Date = bet.BetDate.ToString("dd/MM/yyyy")
                         })
@@ -75,13 +79,17 @@ public class BetApi : IRoute
                     orderby bet.BetDate ascending
                     select new
                     {
+                        bet.Id,
                         bet.PointsBet,
                         bet.BetOnPlayer,
                         bet.RatioBet,
                         bet.RatioWon,
                         bet.Guid,
+                        bet.UserGuid,
                         live.IsEnd,
                         live.Winner,
+                        bet.UserOpponentGuid,
+                        IsJoined = bet.UserOpponentGuid != null && bet.UserOpponentGuid != Guid.Empty,
                         pointsWin = bet.PointsBet * (long)(bet.RatioWon / bet.RatioBet),
                         win = live.Winner == bet.BetOnPlayer,
                         Date = bet.BetDate.ToString("dd/MM/yyyy")

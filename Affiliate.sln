@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Affiliate", "Affiliate.cspr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Affiliate.Tests", "Tests\Affiliate.Tests.csproj", "{DDB96DC4-1DD1-45C0-AB86-6FECADEACEE9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shamo", "..\Shamo\Shamo\Shamo.csproj", "{63C36C0C-0E89-4F20-BAF4-668543E8D285}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{DDB96DC4-1DD1-45C0-AB86-6FECADEACEE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDB96DC4-1DD1-45C0-AB86-6FECADEACEE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDB96DC4-1DD1-45C0-AB86-6FECADEACEE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63C36C0C-0E89-4F20-BAF4-668543E8D285}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63C36C0C-0E89-4F20-BAF4-668543E8D285}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63C36C0C-0E89-4F20-BAF4-668543E8D285}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63C36C0C-0E89-4F20-BAF4-668543E8D285}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

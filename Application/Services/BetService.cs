@@ -154,7 +154,7 @@ public class BetService(IDbContextFactory<DatabaseContext> factory, IHubContext<
         await using var db = await factory.CreateDbContextAsync();
 
         var bet = await db.Bets.FirstOrDefaultAsync(p => p.Guid == form.BetGuid);
-        if (bet == null)
+        if (bet == null || (bet.UserOpponentGuid != null && bet.UserOpponentGuid != Guid.Empty) || bet.IsPaid)
         {
             return null;
         }
@@ -165,11 +165,16 @@ public class BetService(IDbContextFactory<DatabaseContext> factory, IHubContext<
             return null;
         }
 
+        var points = bet.PointsBet * (long)(bet.RatioWon / bet.RatioBet);
+
+        if (user.Points < points)
+        {
+            return null;
+        }
+
         await using var transaction = await db.Database.BeginTransactionAsync();
         try
         {
-            var points = bet.PointsBet * (long)(bet.RatioWon / bet.RatioBet);
-
             if (user.Points < points)
             {
                 return null;
@@ -187,16 +192,19 @@ public class BetService(IDbContextFactory<DatabaseContext> factory, IHubContext<
                 RatioWon = bet.RatioWon
             };
             db.BetJoins.Add(betJoin);
+            bet.UserOpponentGuid = form.UserId;
             user.Points = user.Points - points;
             db.Users.Update(user);
             await db.SaveChangesAsync();
-            
+            await transaction.CommitAsync();
             await hubContext.Clients.All.SendAsync("UpdatePoint", user.Points);
+            await hubContext.Clients.All.SendAsync("UpdateBet", bet.Id);
 
             return betJoin;
         }
         catch (Exception e)
         {
+            await transaction.RollbackAsync();
             return null;
         }
     }

@@ -9,8 +9,7 @@ using Spark.Library.Routing;
 using Affiliate.Application.Startup;
 using Affiliate.Pages;
 using Microsoft.AspNetCore.ResponseCompression;
-using Vite.AspNetCore.Extensions;
-
+using Vite.AspNetCore;
 
 EnvManager.LoadConfig();
 

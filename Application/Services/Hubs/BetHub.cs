@@ -47,9 +47,15 @@ public class BetHub : Hub
                 Log.Error("Form data is null after deserialization.");
             }
 
+            if (form.LiveGuid == Guid.Empty)
+            {
+                Log.Error("Live is empty.");
+                return;
+            }
+
             var result = await _betService.BetAsync(form);
             if (result.Success)
-                await Clients.All.SendAsync("ReceiveDataUpdate", result.Data);
+                await Clients.All.SendAsync("ReceivePlaceBet", result.Data);
             else
             {
                 Log.Error("Bet operation failed.");

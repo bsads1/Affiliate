@@ -7,7 +7,7 @@
 <script src="/js/jquery-3.7.1.min.js"></script>
 <link rel="stylesheet" href="/js/jconfirm/jquery-confirm.min.css">
 <script src="/js/jconfirm/jquery-confirm.min.js"></script>
-@if (Env.IsDevelopment())
+@*@if (Env.IsDevelopment())
 {
     <script type="module" src="@DevServerStatus.ServerUrlWithBasePath/@@vite/client"></script>
     <link rel="stylesheet" href="@DevServerStatus.ServerUrlWithBasePath/Assets/Css/app.css">
@@ -17,4 +17,6 @@ else
 {
     <link rel="stylesheet" href="/build/assets/app.css"/>
     <script type="module" src="/build/assets/app.js"></script>
-}
+}*@
+<link rel="stylesheet" href="/build/assets/app.css"/>
+<script type="module" src="/build/assets/app.js"></script>

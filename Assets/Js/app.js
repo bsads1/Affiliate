@@ -87,7 +87,6 @@ window.globalCommons = (function () {
         let slug;
 
         slug = text.toLowerCase();
-
         slug = slug.replace(/á|à|ả|ạ|ã|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ/gi, 'a');
         slug = slug.replace(/é|è|ẻ|ẽ|ẹ|ê|ế|ề|ể|ễ|ệ/gi, 'e');
         slug = slug.replace(/i|í|ì|ỉ|ĩ|ị/gi, 'i');

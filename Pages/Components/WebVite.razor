@@ -4,7 +4,7 @@
 @inject IViteManifest Manifest
 @inject IViteDevServerStatus DevServerStatus
 
-@if (Env.IsDevelopment())
+@*@if (Env.IsDevelopment())
 {
     <script type="module" src="@DevServerStatus.ServerUrlWithBasePath/@@vite/client"></script>
     <link rel="stylesheet" href="@DevServerStatus.ServerUrlWithBasePath/Assets/Css/main.css">
@@ -14,4 +14,7 @@ else
 {
     <link rel="stylesheet" href="/assets/main.css" />
     <script type="module" src="/assets/app.js"></script>
-}
+}*@
+
+<link rel="stylesheet" href="/assets/main.css" />
+<script type="module" src="/assets/app.js"></script>
